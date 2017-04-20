@@ -1,0 +1,275 @@
+#!/bin/bash
+
+# TODO: move tests into own module
+
+#
+# == Keep off the grass! ==
+#
+# Global scope code is forbidden in modules and libraries.
+#
+# Your module will be sourced for tasks other than running your actions.
+# For example, your module will be sourced to obtain the description.
+# Any code being run here would be a very bad thing!
+#
+
+
+# == basf ==
+# basf is a minimalist framework to write command line programms under the
+# umbrella of the basf command, organized in modules and with a simple and unique
+# interface.
+#
+# The typical invocation of basf on the command prompt is:
+# $ basf <module> <action> [options...]
+#
+#
+# == Module ==
+# a module is a container that organizes a set of related commands - the actions.
+#
+# From the user perspective, the call of an module and it's action is similar to
+# call a command on the command line. But instead of grouping several related
+# commands loosely by a similar name, a module groups this commands into the same
+# namespace.
+#
+# In addition to the actions a module provides typically other common information,
+# such a description and a help.
+#
+# Bash and therefore modules supports inheritance and each module automatically
+# inherits from a default.${BASF_MODULE_EXTENSION} module (it is located in the libs/ directory).
+#
+#
+# == Actions ==
+# actions are functions that can be called by the user. Or if you think OOP,
+# then you can also say that these are the public methods of your modules.
+#
+# Within a module a normal bash function is an action if it starts with
+# the prefix do_. A action can request any parameter like every other function
+# within the $@ variable and that works as expected. I.e. every value after
+# <action> is passed as a parameter to the action.
+#
+# There are also some predefined actions. These are:
+#   usage
+#   version
+#   help
+#
+# These actions do what they obviously should do.
+# You can overwrite this actions but usually there is no good reason to do it.
+# By the way, the default implementation of these functions can be found in
+# libs/default.${BASF_LIBRARY_EXTENSION}.
+#
+
+#
+# The following variable are optional.
+# If they are not defined they are initialized with the following values
+#
+
+# Description of this module
+DESCRIPTION=""
+
+# The default action if none is given
+DEFAULT_ACTION="usage"
+
+# The version of this module
+VERSION=""
+
+# Hide this module in the module overview.
+HIDDENMODULE=0
+
+
+# Since this module should not appear in the module overview,
+# we quickly set the value to true
+HIDDENMODULE=1
+
+
+##
+## Actions
+##
+
+#
+# An action is defined by a function do_<actionname>()
+# So any function whose name starts with do_ is considered to
+# be an action implementation.
+#
+do_hello() {
+    echo "Hello"
+}
+
+#
+# However, the hello action does not follow a good style because it lacks
+# a description of the action. If the action has additionals parameters or
+# options, also these should be described.
+#
+
+do_world() {
+    echo "World!"
+}
+
+describe_world() {
+    echo "Description of the world action"
+}
+
+describe_world_parameters() {
+    echo "<myparam>"
+}
+
+describe_world_options() {
+    make_option --name "oho"   --short "o" --long "oho"   --desc "the oho options"
+}
+
+
+#
+# By default, an error is thrown when the requested action was not found.
+# However, if a function __action exists, then this function is called instead.
+#
+# Notice that this function is called for all unknown actions, but not if
+# no action is specified at all. For that case look at DEFAULT_ACTION and
+# __module().
+#
+
+__action() {
+    local action=$1
+    shift
+
+    echo "Action __action() invoked for action '$action' with params '$@'."
+}
+
+
+#
+# There are several ways to control the behavior when the module was called
+# without specifying an action.
+#
+# First, there is the default behavior. If nothing else works, then the function
+# do_usage is called. This function is already defined in the base file and
+# therefore pretty sure available.
+#
+# The first way to change this behavior is to set another default action
+# using DEFAULT_ACTION as described above.
+#
+# The second, not recommended, way is the most obvious - overwrite
+# the do_usage function.
+#
+# A third possibility is to implement the __module function.
+#
+#
+__module() {
+    local action=$1
+    shift
+
+    echo "Action __module() invoked for action '$1' with params '$@'"
+}
+
+
+# That's it! ;-)
+#
+# However, basf provides some more useful concepts.
+# One of them are reusable utility functions grouped into so-called libraries.
+# These libraries are defined in .${BASF_LIBRARY_EXTENSION} files in the libs/ directory.
+#
+# To load such a library use the inherit function.
+#
+# For example, the following command loads the libraries config, tests
+# and output.
+
+inherit config tests output
+#inherit doesnotexists
+
+
+#
+# Utility Functions (core)
+#
+
+# killme - Quietly exit with a fatal error.
+do_killme() {
+    killme
+}
+
+# die -  Exit with a fatal error. die should be invoked with param -q, e.q:
+do_die() {
+    die -q "Message to display"
+}
+
+# If not, it will display a stacktrace (with optional error message):
+do_die2() {
+    die "Fatal error"
+}
+
+#
+# Output Functions (output)
+#
+
+# print warning or error messages:
+do_msg() {
+    write_info_msg "The information message"
+    write_warning_msg "The warning message"
+    write_error_msg "The error message"
+
+    echo
+
+    rfill "A" 20        ; write_block_ok 1
+    rfill "BBB" 20      ; write_block_ok 1
+    rfill "CCCC" 20     ; write_block_skip 1
+    rfill "DDDDDDDD" 20 ; write_block_fail 1
+    rfill "EEEEE" 20    ; write_block_skip 1
+}
+
+# print spaces:
+do_space() {
+    echo -n "Hello"
+    space 24
+    echo "World";
+}
+
+# display lists:
+do_list() {
+    write_list_start "The example list:"
+    write_kv_list_entry "First" "This is the first entry"
+    write_kv_list_entry "$(highlight_marker Second)" "This is the $(highlight second) entry"
+    write_kv_list_entry "Third" "$(highlight The end)"
+}
+
+#
+# Test Functions (tests)
+#
+
+do_tests() {
+    echo has_option test:
+    has_option "opt_a" "-a" && write_norm_green "'opt_a' option found in '-a'" || write_norm_red "'opt_a' option not found in '-a'"
+    has_option "opt_a" "-b -a -c" && write_norm_green "'opt_a' option found in '-b -a -c'" || write_norm_red "'opt_a' option not found in '-b -a -c'"
+    has_option "opt_a" "--opt_a" && write_norm_green "'opt_a' option found in '--opt_a'" || write_norm_red "'opt_a' option not found in '--opt_a'"
+    has_option "opt_a" "--opt_b --opt_a --opt_c" && write_norm_green "'opt_a' option found in '--opt_b --opt_a --opt_c'" || write_norm_red "'opt_a' option not found in '--opt_b --opt_a --opt_c'"
+    has_option "opt_a" "-b" && write_norm_red "'opt_a' option found in '-b'" || write_norm_green "'opt_a' option not found in '-b'"
+    has_option "opt_b" "-ba" && write_norm_green "'opt_b' option found in '-ba'" || write_norm_red "'opt_b' option not found in '-ba'"
+    has_option "opt_a" "-ba" && write_norm_green "'opt_a' option found in '-ba'" || write_norm_red "'opt_a' option not found in '-ba'"
+    has_option "opt_b" "-a" && write_norm_red "'opt_b' option found in '-a'" || write_norm_green "'opt_b' option not found in '-a'"
+    has_option "unknown_opt" "-a" && write_norm_red "'unknown_opt' option found in '-a'" || write_norm_green "'unknown_opt' option not found in '-a'"
+
+    echo
+    echo "is_function test:"
+    echo -n "is_function is "; is_function "is_function"  && write_norm_green "a function." || write_norm_red "not a function."
+    echo -n "do_tests is "   ; is_function "do_tests"     && write_norm_green "a function." || write_norm_red "not a function."
+    echo -n "hello_fn is "; is_function "hello_fn"  && write_norm_red   "a function." || write_norm_green "not a function."
+    hello_fn() { echo "Hello Fn!"; }
+    echo -n "hello_fn is "; is_function "hello_fn"  && write_norm_green "a function." || write_norm_red "not a function."
+
+    # is_number returns true if the parameter is a positive integer
+
+    echo
+    echo "is_number test:"
+    echo -n "\"23\" is " ; is_number "23"  && write_norm_green "a number." || write_norm_red "not a number."
+    echo -n "42 is "     ; is_number 42    && write_norm_green "a number." || write_norm_red "not a number."
+    echo -n "\"-32\" is "; is_number "-32" && write_norm_red   "a number." || write_norm_green "not a number."
+    echo -n "foo is "    ; is_number "foo" && write_norm_red   "a number." || write_norm_green "not a number."
+
+}
+
+describe_tests_options() {
+    make_option --hidden --name "opt_a"   --short "a" --long "opt_a"   --desc "opt_a"
+    make_option --hidden --name "opt_b"   --short "b" --long "opt_b"   --desc "opt_b"
+    make_option --hidden --name "opt_c"   --short "c" --long "opt_c"   --desc "opt_c"
+}
+
+
+#
+# Look at the source code... there are many other useful functions.
+#
+
+# vi: set shiftwidth=4 tabstop=4 expandtab:

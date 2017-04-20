@@ -1,0 +1,86 @@
+#!/bin/bash
+
+DESCRIPTION="Query ${BASF_MODULE_EXTENSION} modules"
+VERSION="0.1.0"
+HIDDENMODULE=1
+
+describe_list() {
+    echo "List all available modules"
+}
+
+describe_list_options() {
+    echo "--only-names : Output names of modules only"
+}
+
+do_list() {
+    local only_names path file module name desc path
+    local -a extra_modules
+
+    if [[ ${1#--} = only-names ]]; then
+        only_names=1
+        shift
+    fi
+
+    [[ $# -gt 0 ]] && die -q "Too many parameters"
+
+    for path in "${BASF_MODULES_PATH[@]}"; do
+        for file in "${path}"/*.${BASF_MODULE_EXTENSION} ; do
+            [[ -f ${file} ]] || continue
+            [ "$(read_config_value "${file}" HIDDENMODULE)" == "1" ] && continue
+
+            extra_modules=( "${extra_modules[@]}" "${file}" )
+        done
+    done
+
+    if [[ -n ${only_names} ]]; then
+        # This is mainly intended for bash completion
+        echo "help"
+        echo "usage"
+        echo "version"
+        for module in "${extra_modules[@]}" ; do
+            name=${module##*/}
+            echo "${name%%.${BASF_MODULE_EXTENSION}}"
+        done
+    else
+        write_list_start "Built-in modules:"
+        write_kv_list_entry "help"          "Display a help message"
+        write_kv_list_entry "usage"         "Display a usage message"
+        write_kv_list_entry "version"       "Display version information"
+
+        if [[ ${#extra_modules[@]} -gt 0 ]] ; then
+            echo
+            write_list_start "Extra modules:"
+            for module in "${extra_modules[@]}" ; do
+                name=${module##*/}
+                name=${name%%.${BASF_MODULE_EXTENSION}}
+                desc="$(read_config_value "${module}" DESCRIPTION) " || killme
+                desc=${desc:-No description available}
+                write_kv_list_entry "${name}" "${desc}"
+            done
+        fi
+    fi
+}
+
+describe_has() {
+    echo "Return true if the module is installed, otherwise false."
+}
+
+describe_has_parameters() {
+    echo "<module>"
+}
+
+do_has() {
+    [[ -z $1 ]]    && die -q "Required option (module name) missing"
+    [[ $# -gt 1 ]] && die -q "Too many parameters"
+
+    local modname=$1 modpath
+
+    for path in "${BASF_MODULES_PATH[@]}"; do
+        [[ -f "${path}/${modname}.${BASF_MODULE_EXTENSION}" ]] && return 0
+    done
+
+    return 1
+}
+
+
+# vi: set shiftwidth=4 tabstop=4 expandtab:

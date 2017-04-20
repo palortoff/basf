@@ -1,0 +1,309 @@
+#!/bin/bash
+
+###
+## @file
+## @ingroup basf
+## @brief This is the main script of basf.
+##
+## This script bootstraps the environment for the modules,
+## i.e. reads the configuration, sets a few default values, parses the command
+## line arguments and finally invokes a modules action function.
+##
+## The script is modular and easily extensible. Through the single entry point
+## and the uniform interface, the script is very easy to use. And by the way
+## it is much faster than dozens of individual scripts that invoke each other.
+##
+## That's it - all in all in significantly less than 500 LOC.
+##
+###
+
+## Enables checking of all commands.
+## If a command exists with an error and the caller doesn't check this case,
+## the script aborts immediately.
+#set -e
+
+## Trace the execution of all commands. This will make the interpreter print
+## each command right before the command is executed.
+#set -x
+
+## @var BASF_VERSION
+## @brief The basf version string
+## @showinitializer
+declare -xr BASF_VERSION="0.0.1"
+
+## @brief This variable holds the process ID of the main basf program instance.
+declare -xr BASF_KILL_TARGET="$$"
+declare -xr BASF_LIBRARY_EXTENSION="bsl"
+declare -xr BASF_MODULE_EXTENSION="bsm"
+
+[ -z ${BASF_BINARY_NAME} ] && declare -xr BASF_BINARY_NAME="`basename ${0}`"
+[ -z ${BASF_PROGRAM_NAME} ] && declare -xr BASF_PROGRAM_NAME="${BASF_BINARY_NAME}"
+[ -z ${BASF_PROGRAM_VERSION} ] && declare -xr BASF_PROGRAM_VERSION=${BASF_VERSION}
+
+find_link(){
+    local rp=$(readlink --version &>/dev/null && readlink -e $1 2>/dev/null || echo $1)
+    if [[ -z "$rp" ]]; then
+      echo "fatal: failed to execute 'readlink -e $1'."; exit 255
+    fi
+
+    if [[ ! -f "$rp" ]]; then
+      echo "fatal: expected that '$rp' is a file." ; exit 255
+    fi
+
+    if [[ ! -e "$rp" ]]; then
+      echo "fatal: The file '$rp' exists, but is not executable." ; exit 255
+    fi
+
+    pushd `dirname $rp` > /dev/null
+    pwd -P
+    popd > /dev/null
+}
+
+## @brief The root directory of the basf program installation
+declare -x -r BASF_PROGRAM_ROOT="$(find_link $0)"
+## @brief The root directory of the basf installation
+declare -x -r BASF_ROOT="$(find_link ${BASH_SOURCE[0]})"
+
+## @brief Array containing a list of library search paths
+declare -xar BASF_LIB_PATH=( "${HOME}/.${BASF_PROGRAM_NAME}/libs" \
+                            "${HOME}/.basf/libs" \
+                            "${BASF_PROGRAM_ROOT}/libs" \
+                            "${BASF_ROOT}/libs" \
+                            "/usr/share/${BASF_PROGRAM_ROOT}/libs" \
+                            "/usr/share/basf/libs" \
+                            "/usr/local/share/${BASF_PROGRAM_ROOT}/libs" \
+                            "/usr/local/share/basf/libs" \
+                            "/opt/${BASF_PROGRAM_ROOT}/libs" \
+                            "/opt/basf/libs" )
+
+## @brief Array containing a list of module search paths
+declare -xar BASF_MODULES_PATH=( "${HOME}/.${BASF_PROGRAM_NAME}/modules" \
+                            "${HOME}/.basf/modules" \
+                            "${BASF_PROGRAM_ROOT}/modules" \
+                            "${BASF_ROOT}/modules" \
+                            "/usr/share/${BASF_PROGRAM_ROOT}/modules" \
+                            "/usr/share/basf/modules" \
+                            "/usr/local/share/${BASF_PROGRAM_ROOT}/modules" \
+                            "/usr/local/share/basf/modules" \
+                            "/opt/${BASF_PROGRAM_ROOT}/modules" \
+                            "/opt/basf/modules" )
+
+
+## Remove all alias definitions and unset functions and
+## variables that are known to cause trouble.
+"unalias" -a
+unset -f rm
+unset CDPATH GLOBIGNORE
+IFS=$' \t\n'
+
+## enable globs, which have the expressive power of regular expressions
+shopt -s extglob
+
+## Save stderr file descriptor
+if (( BASH_VERSINFO[0] == 4 && BASH_VERSINFO[1] >= 1 || BASH_VERSINFO[0] > 4 )); then
+    exec {BASF_STDERR}>&2    # >=bash-4.1
+fi
+
+
+###
+## @fn find_lib()
+##
+## @brief Find a library in the default locations.
+##
+## This is the simplest helper function to find a library.
+## The first parameter is the name of the library, the optional second
+## parameter is the file extension.
+##
+## If no file extension specified, "${BASF_LIBRARY_EXTENSION}" is assumed.
+##
+## The function searches all directories specified in BASF_LIB_PATH.
+## It prints the full name of the first file found or nothing,
+## if the file couldn't be found.
+##
+## @param name The name of the library
+## @param ext Optional file extension, default is .${BASF_LIBRARY_EXTENSION}
+##
+## @retval 0 if the library was found
+## @retval 2 in case of wrong input parameters
+## @retval 1 otherwise
+##
+###
+find_lib() {
+    local libname=$1
+    local libext="${2:-${BASF_LIBRARY_EXTENSION}}"
+
+    [ -z "$libname" ] && return 2
+
+    local libpath
+    for libpath in "${BASF_LIB_PATH[@]}"; do
+        if [[ -r "${libpath}/${libname}.${libext}" ]]; then
+            echo "${libpath}/${libname}.${libext}"
+
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+##
+## Find and load the core library
+##
+core="$( find_lib 'core' )"
+if [[ "$core" ]] ; then
+    source "$core" || exit 255
+else
+    echo "fatal: ${BASF_BINARY_NAME} core library not found.";
+    exit 255;
+fi
+
+##
+## Load necessary functions for the main script
+##
+inherit config output tests
+
+## Load settings
+
+load_settings(){
+    if [[ -r "${1}" ]] ; then
+        source "${1}" 2> /dev/null || die -q "Failed to source '${1}'"
+    fi
+}
+
+load_settings "${BASF_ROOT}/basf.conf"
+load_settings "${BASF_PROGRAM_ROOT}/${BASF_BINARY_NAME}.conf"
+load_settings "${BASF_ROOT}/basf.user.conf"
+load_settings "${BASF_PROGRAM_ROOT}/${BASF_BINARY_NAME}.user.conf"
+load_settings "${HOME}/.basf"
+load_settings "${HOME}/.${BASF_BINARY_NAME}"
+
+
+## Sneaky trick to make die in subshells work.
+## If you don't get it, don't ask...
+set -E                                  # shell functions inherits the ERR trap
+trap '[ $? -ne 249 ] || exit 249' ERR
+
+
+###
+## @private
+## @fn basf_do_usage()
+## @brief Print the basf usage string.
+##
+## A function that simply echoes a default usage string to stdout.
+##
+## @note This function will not terminate the program
+###
+basf_do_usage() {
+    echo "Usage: ${BASF_BINARY_NAME} [global options] command [options]"
+}
+
+###
+## @private
+## @fn basf_do_help()
+## @brief Print the basf help screen.
+##
+## This function displays the basf help screen which
+## includes information about all available modules.
+##
+## @note This function will not terminate the program
+###
+basf_do_help() {
+    basf_do_usage
+    echo
+
+    # display all recognized global options
+    write_list_start "Global options:"
+    write_kv_list_entry "--brief" "Make output shorter"
+    write_kv_list_entry "--color=<yes|no|auto>" "Enable or disable color output (default 'auto')"
+    echo
+
+    # display all available basf modules
+    do_action modules list
+}
+
+
+###
+## @private
+## @fn basf_do_version()
+## @brief Print the basf version string.
+##
+## A function that simply echoes the version string to stdout.
+##
+## @note This function will not terminate the program
+###
+basf_do_version() {
+    echo "${BASF_PROGRAM_NAME} ${BASF_PROGRAM_VERSION}"
+    echo "BASF ${BASF_VERSION}"
+}
+
+##############################################################################
+###### main code #############################################################
+##############################################################################
+
+# parse global options
+while [[ ${1##--} != "$1" ]]; do
+    case ${1##--} in
+        brief)
+            set_output_mode brief
+            ;;
+        color=*|colour=*|color|colour)
+            # accept all arguments that are valid for ls
+            case ${1#*=} in
+                yes|y|always|force|$1) color=yes ;;
+                no|n|never|none) color=no ;;
+                auto|tty|if-tty) color="" ;;
+                *) die -q "Invalid argument for ${1%%=*} option" ;;
+            esac
+            ;;
+        help|version)
+            [[ -z ${action} ]] || die -q "Too many parameters"
+            action=${1##--}
+            ;;
+        "")
+            # -- indicates end of options
+            shift
+            break
+            ;;
+        *)
+            die -q "Unknown option $1"
+            ;;
+    esac
+    shift
+done
+
+if [[ -z ${action} && $# -gt 0 ]]; then
+    action=$1
+    shift
+fi
+
+# enable color output and get width of terminal if stdout is a tty
+if [[ -t 1 ]]; then
+    colors ${color:-yes}
+    init_columns
+else
+    colors ${color:-no}
+fi
+unset color
+
+if [[ -n ${action} ]]; then
+    # Make help <module> an alias for <module> help
+    if [[ ${action,,} == "help" && $# -gt 0 && ${1,,} != "help" ]]; then
+       mod=$1
+       shift
+       "$0" "$mod" "help" "$@"
+       exit $?
+    fi
+
+    # if the function is a built in function
+    if is_function "basf_do_${action}"; then
+        [[ $# -eq 0 ]] || die -q "Too many parameters"
+        basf_do_${action}
+    else
+        # search and execute the action
+        do_action "${action}" "$@"
+    fi
+else
+    basf_do_help
+fi
+
+# vi: set shiftwidth=4 tabstop=4 expandtab:
