@@ -65,29 +65,34 @@ declare -x -r BASF_PROGRAM_ROOT="$(find_link $0)"
 declare -x -r BASF_ROOT="$(find_link ${BASH_SOURCE[0]})"
 
 ## @brief Array containing a list of library search paths
-declare -xar BASF_LIB_PATH=( "${HOME}/.${BASF_PROGRAM_NAME}/libs" \
-                            "${HOME}/.basf/libs" \
-                            "${BASF_PROGRAM_ROOT}/libs" \
-                            "${BASF_ROOT}/libs" \
-                            "/usr/share/${BASF_PROGRAM_ROOT}/libs" \
-                            "/usr/share/basf/libs" \
-                            "/usr/local/share/${BASF_PROGRAM_ROOT}/libs" \
-                            "/usr/local/share/basf/libs" \
-                            "/opt/${BASF_PROGRAM_ROOT}/libs" \
-                            "/opt/basf/libs" )
+declare -xar BASF_LIB_PATH_PATH_WITH_POSSIBLE_DUPLICATES=( \
+    "${HOME}/.${BASF_PROGRAM_NAME}/libs" \
+    "${HOME}/.basf/libs" \
+    "${BASF_PROGRAM_ROOT}/libs" \
+    "${BASF_ROOT}/libs" \
+    "/usr/share/${BASF_PROGRAM_ROOT}/libs" \
+    "/usr/share/basf/libs" \
+    "/usr/local/share/${BASF_PROGRAM_ROOT}/libs" \
+    "/usr/local/share/basf/libs" \
+    "/opt/${BASF_PROGRAM_ROOT}/libs" \
+    "/opt/basf/libs" )
+
+BASF_LIB_PATH=($(echo "${BASF_LIB_PATH_PATH_WITH_POSSIBLE_DUPLICATES[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' '))
 
 ## @brief Array containing a list of module search paths
-declare -xar BASF_MODULES_PATH=( "${HOME}/.${BASF_PROGRAM_NAME}/modules" \
-                            "${HOME}/.basf/modules" \
-                            "${BASF_PROGRAM_ROOT}/modules" \
-                            "${BASF_ROOT}/modules" \
-                            "/usr/share/${BASF_PROGRAM_ROOT}/modules" \
-                            "/usr/share/basf/modules" \
-                            "/usr/local/share/${BASF_PROGRAM_ROOT}/modules" \
-                            "/usr/local/share/basf/modules" \
-                            "/opt/${BASF_PROGRAM_ROOT}/modules" \
-                            "/opt/basf/modules" )
+declare -xar BASF_MODULES_PATH_WITH_POSSIBLE_DUPLICATES=( \
+    "${HOME}/.${BASF_PROGRAM_NAME}/modules" \
+    "${HOME}/.basf/modules" \
+    "${BASF_PROGRAM_ROOT}/modules" \
+    "${BASF_ROOT}/modules" \
+    "/usr/share/${BASF_PROGRAM_ROOT}/modules" \
+    "/usr/share/basf/modules" \
+    "/usr/local/share/${BASF_PROGRAM_ROOT}/modules" \
+    "/usr/local/share/basf/modules" \
+    "/opt/${BASF_PROGRAM_ROOT}/modules" \
+    "/opt/basf/modules" )
 
+BASF_MODULES_PATH=($(echo "${BASF_MODULES_PATH_WITH_POSSIBLE_DUPLICATES[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' '))
 
 ## Remove all alias definitions and unset functions and
 ## variables that are known to cause trouble.
