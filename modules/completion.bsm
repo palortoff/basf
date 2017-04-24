@@ -1,0 +1,115 @@
+#!/bin/bash
+
+DESCRIPTION="Completion for ${BASF_PROGRAM_NAME}"
+VERSION="0.1.0"
+HIDDENMODULE=0
+
+do_usage(){
+    echo
+    write_bold_green "${BASF_PROGRAM_NAME} completion"
+    echo
+    write_norm_yellow "source <(${BASF_BINARY_NAME} completion bash)"
+    echo or
+    write_norm_yellow "${BASF_BINARY_NAME} completion bash >> ~/.bashrc"
+    echo
+}
+
+describe_usage(){
+    echo "Completion usage"
+}
+
+do_bash(){
+    cat <<EOF
+#!bash
+#
+# ${BASF_PROGRAM_NAME} Bash Completion
+# =======================
+
+_${BASF_BINARY_NAME}_complete(){
+    COMPREPLY=()
+
+    local module
+    cur=\${COMP_WORDS[COMP_CWORD]}
+
+    module=\$(_${BASF_BINARY_NAME}_get_module)
+
+    case "\${module}" in
+        help|version|usage)
+            COMPREPLY=( \$( compgen -- \$cur ))
+            ;;
+
+        *)
+            if [ ! -z \$module ] && \$(\${COMP_WORDS[0]} modules has \$module) ; then
+                _${BASF_BINARY_NAME}_complete_module \$module
+            else
+                MODULES=\$(\${COMP_WORDS[0]} modules list --only-names)
+                COMPREPLY=( \$( compgen -W "\$MODULES" -- \$cur ))
+            fi
+            ;;
+        esac
+}
+
+_${BASF_BINARY_NAME}_complete_module(){
+    local module="\${1}"
+
+    local action=\$(_${BASF_BINARY_NAME}_get_action)
+    if [ ! -z \$action ] && \$(\${COMP_WORDS[0]} \${module} has_action \${action}) ; then
+        _${BASF_BINARY_NAME}_complete_action \$module \$action
+    else
+        ACTIONS=\$(\${COMP_WORDS[0]} \$module list_actions)
+        COMPREPLY=( \$( compgen -W "\$ACTIONS" -- \$cur ))
+    fi
+}
+
+_${BASF_BINARY_NAME}_complete_action(){
+    local module="\${1}"
+    local action="\${2}"
+
+    local OPTIONS=\$(\${COMP_WORDS[0]} \${module} list_action_options \${action})
+    COMPREPLY=( \$( compgen -W "\$OPTIONS" -- \$cur ))
+}
+
+_${BASF_BINARY_NAME}_get_module(){
+	local i
+
+	for ((i = 1; i < \${#COMP_WORDS[@]}; ++i)); do
+		if [[ \${COMP_WORDS[i]} != -* ]]; then
+			echo \${COMP_WORDS[i]}
+			break
+		fi
+	done
+}
+
+_${BASF_BINARY_NAME}_get_action(){
+    local i
+    local module_found=1
+
+    for ((i = 1; i < \${#COMP_WORDS[@]}; ++i)); do
+		if [[ \${COMP_WORDS[i]} != -* ]]; then
+            if [ \${module_found} -eq 0 ]; then
+                echo \${COMP_WORDS[i]}
+			    break
+            else
+                module_found=0
+            fi
+		fi
+	done
+}
+
+complete -F _${BASF_BINARY_NAME}_complete ${BASF_BINARY_NAME}
+
+EOF
+}
+
+describe_bash(){
+    echo "Bash completion"
+}
+
+do_zsh(){
+    echo "coming soon-ish..."
+    return 1
+}
+
+describe_zsh(){
+    echo "Zsh completion"
+}
