@@ -8,6 +8,7 @@ describe_list() {
     echo "List all available modules"
 }
 
+# TODO: option all
 describe_list_options() {
     echo "--only-names : Output names of modules only"
 }

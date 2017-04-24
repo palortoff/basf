@@ -110,6 +110,97 @@ make_option() {
     echo "${short} ${long} : ${desc}"
 }
 
+do_list_actions(){
+    #  set is a command every POSIX compatible shell must implement.
+    #  POSIX also requires, that if set is called without arguments,
+    #  set shall print all shell variables as key/value pairs.
+    for action in $(set | sed -n -e '/^do_\S\+ ()\s*$/s/^do_\(\S\+\).*/\1/p' | sort); do
+        is_function "hide_${action}" && hide_${action} && ! has_option all "$@" && continue
+        [ $action == "action" ] && continue
+        echo -n "$action "
+    done
+}
+hide_list_actions(){
+    return 0
+}
+
+describe_list_actions(){
+    echo "lists all actions for this module"
+}
+
+describe_list_actions_options(){
+    make_option --name "all" --short "a" --long "all" --desc "do not omit hidden actions"
+}
+
+do_list_action_options(){
+    local do_list_action_options_parameters="$@"
+    make_option() {
+        TEMP=`getopt --long short:,long:,desc:,name:,hidden -- funcname "$@"`
+        eval set -- "$TEMP"
+
+        local long short
+        while true; do
+            case "$1" in
+                --name|--desc ) shift 2 ;;
+                --short ) short="-$2"; shift 2 ;;
+                --long ) long="--$2"; shift 2 ;;
+                --hidden )
+                    if has_option "all" "${do_list_action_options_parameters}"; then
+                        shift
+                    else
+                        return 0
+                     fi
+                    ;;
+                -- ) shift; break ;;
+                * ) break ;;
+            esac
+        done
+
+        echo -n "$short $long "
+    }
+
+    if is_function describe_${1}_options; then
+        describe_${1}_options
+    fi
+    echo
+
+    return 0
+}
+
+hide_list_action_options(){
+    return 0
+}
+
+describe_list_action_options(){
+    echo "lists all options for the action"
+}
+
+describe_list_action_options_options(){
+    make_option --name "all" --short "a" --long "all" --desc "do not omit hidden actions"
+}
+
+do_has_action() {
+    [[ -z $1 ]]    && die -q "Required option (action name) missing"
+    [[ $# -gt 1 ]] && die -q "Too many parameters"
+
+    local action_name=$1
+
+    is_function do_${action_name}
+}
+
+describe_has_action() {
+    echo "Return true if the module has an action <action>, otherwise false."
+}
+
+describe_has_action_parameters() {
+    echo "<action>"
+}
+
+hide_has_action(){
+    return 0
+}
+
+
 ###
 ## @protected
 ## @fn do_help()
@@ -131,19 +222,8 @@ do_help() {
     echo
     write_list_start "Extra actions:"
 
-    # for newbies:
-    #  set is a command every POSIX compatible shell must implement.
-    #  POSIX also requires, that if set is called without arguments,
-    #  set shall print all shell variables as key/value pairs.
-    #  A look says more than thousand words -> open your shell and have a look.
-    local actionList=()
-    for action in $(set | sed -n -e '/^do_\S\+ ()\s*$/s/^do_\(\S\+\).*/\1/p' | sort); do
-        if [ "${action}" == "list" ] ; then
-            actionList=( "$action" ${actionList[@]} )
-        else
-            actionList+=( "$action" )
-        fi
-    done
+    local actionList
+    read -r -a actionList <<< `do_list_actions "$@"`
 
     # The for loop interates over all shell variables which are functions
     # _and_ starts with the prefix "do_". In the body of the loop the $action
@@ -155,8 +235,6 @@ do_help() {
                 continue
                 ;;
             ?*)
-                is_function "hide_${action}" && hide_${action} && continue
-
                 # call corresponding functions if available to read the descriptions
                 local desc=""
                 is_function "describe_${action}" && desc=$(describe_${action})

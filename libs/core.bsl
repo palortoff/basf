@@ -140,6 +140,8 @@ check_do() {
     fi
 }
 
+# FIXME: change function name.
+#       the prefix "do_" makes this actually an action for any module, but calling it results in an error
 
 ###
 ## @private

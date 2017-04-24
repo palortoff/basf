@@ -78,7 +78,6 @@ has_no_option() {
 ###
 is_function() {
     declare -f -F "${1}" > /dev/null
-    #[[ $(type -t "${1}" ) == "function" ]]
 }
 
 ###
