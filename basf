@@ -66,6 +66,7 @@ declare -x -r BASF_ROOT="$(find_link ${BASH_SOURCE[0]})"
 
 ## @brief Array containing a list of library search paths
 declare -xar BASF_LIB_PATH_PATH_WITH_POSSIBLE_DUPLICATES=( \
+    "${BASF_CUSTOM_LIB_PATH}" \
     "${HOME}/.${BASF_PROGRAM_NAME}/libs" \
     "${HOME}/.basf/libs" \
     "${BASF_PROGRAM_ROOT}/libs" \
@@ -81,6 +82,7 @@ BASF_LIB_PATH=($(echo "${BASF_LIB_PATH_PATH_WITH_POSSIBLE_DUPLICATES[@]}" | tr '
 
 ## @brief Array containing a list of module search paths
 declare -xar BASF_MODULES_PATH_WITH_POSSIBLE_DUPLICATES=( \
+    "${BASF_CUSTOM_MODULE_PATH=}" \
     "${HOME}/.${BASF_PROGRAM_NAME}/modules" \
     "${HOME}/.basf/modules" \
     "${BASF_PROGRAM_ROOT}/modules" \
