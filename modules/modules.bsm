@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DESCRIPTION="Query ${BASF_MODULE_EXTENSION} modules"
+DESCRIPTION="Query ${BASF_PROGRAM_NAME} modules"
 VERSION="0.1.0"
 HIDDENMODULE=1
 
@@ -10,6 +10,7 @@ describe_list() {
 
 # TODO: option all
 describe_list_options() {
+    # TODO: use make_option
     echo "--only-names : Output names of modules only"
 }
 
@@ -31,6 +32,14 @@ do_list() {
 
             extra_modules=( "${extra_modules[@]}" "${file}" )
         done
+        if [ ! -z ${BASF_CUSTOM_MODULE_EXTENSION} ]; then
+            for file in "${path}"/*.${BASF_CUSTOM_MODULE_EXTENSION} ; do
+                [[ -f ${file} ]] || continue
+                [ "$(read_config_value "${file}" HIDDENMODULE)" == "1" ] && continue
+
+                extra_modules=( "${extra_modules[@]}" "${file}" )
+            done
+        fi
     done
 
     if [[ -n ${only_names} ]]; then
@@ -40,7 +49,9 @@ do_list() {
         echo "version"
         for module in "${extra_modules[@]}" ; do
             name=${module##*/}
-            echo "${name%%.${BASF_MODULE_EXTENSION}}"
+            name=${name%%.${BASF_MODULE_EXTENSION}}
+            name=${name%%.${BASF_CUSTOM_MODULE_EXTENSION}}
+            echo "${name}"
         done
     else
         write_list_start "Built-in modules:"
@@ -54,6 +65,7 @@ do_list() {
             for module in "${extra_modules[@]}" ; do
                 name=${module##*/}
                 name=${name%%.${BASF_MODULE_EXTENSION}}
+                name=${name%%.${BASF_CUSTOM_MODULE_EXTENSION}}
                 desc="$(read_config_value "${module}" DESCRIPTION) " || killme
                 desc=${desc:-No description available}
                 write_kv_list_entry "${name}" "${desc}"
@@ -78,6 +90,7 @@ do_has() {
 
     for path in "${BASF_MODULES_PATH[@]}"; do
         [[ -f "${path}/${modname}.${BASF_MODULE_EXTENSION}" ]] && return 0
+        [[ -f "${path}/${modname}.${BASF_CUSTOM_MODULE_EXTENSION}" ]] && return 0
     done
 
     return 1

@@ -118,17 +118,13 @@ fi
 ## @brief Find a library in the default locations.
 ##
 ## This is the simplest helper function to find a library.
-## The first parameter is the name of the library, the optional second
-## parameter is the file extension.
-##
-## If no file extension specified, "${BASF_LIBRARY_EXTENSION}" is assumed.
+## The first parameter is the name of the library
 ##
 ## The function searches all directories specified in BASF_LIB_PATH.
 ## It prints the full name of the first file found or nothing,
 ## if the file couldn't be found.
 ##
 ## @param name The name of the library
-## @param ext Optional file extension, default is .${BASF_LIBRARY_EXTENSION}
 ##
 ## @retval 0 if the library was found
 ## @retval 2 in case of wrong input parameters
@@ -143,10 +139,15 @@ find_lib() {
 
     local libpath
     for libpath in "${BASF_LIB_PATH[@]}"; do
-        if [[ -r "${libpath}/${libname}.${libext}" ]]; then
-            echo "${libpath}/${libname}.${libext}"
-
+        if [[ -r "${libpath}/${libname}.${BASF_LIBRARY_EXTENSION}" ]]; then
+            echo "${libpath}/${libname}.${BASF_LIBRARY_EXTENSION}"
             return 0
+        fi
+        if [ ! -z ${BASF_CUSTOM_LIB_EXTENSION} ]; then
+            if [[ -r "${libpath}/${libname}.${BASF_CUSTOM_LIB_EXTENSION}" ]]; then
+                echo "${libpath}/${libname}.${BASF_CUSTOM_LIB_EXTENSION}"
+                return 0
+            fi
         fi
     done
 

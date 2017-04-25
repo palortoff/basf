@@ -117,6 +117,12 @@ find_optional_module() {
             echo "${modpath}/${modname}.${BASF_MODULE_EXTENSION}"
             return
         fi
+        if [ ! -z "${BASF_CUSTOM_MODULE_EXTENSION}" ]; then
+            if [[ -f "${modpath}/${modname}.${BASF_CUSTOM_MODULE_EXTENSION}" ]]; then
+                echo "${modpath}/${modname}.${BASF_CUSTOM_MODULE_EXTENSION}"
+                return
+            fi
+        fi
     done
 }
 ###
@@ -177,8 +183,6 @@ do_action() {
     [[ ${1} == ${module} ]] && shift
     [[ ${1} == ${action} ]] && shift
 
-    local modfile=""
-
     # the length of the string module is nonzero - otherwise die
     [[ -n ${module} ]] || die "Usage: do_action <module> <args>"
 
@@ -187,14 +191,14 @@ do_action() {
     BASF_COMMAND="${BASF_BINARY_NAME} ${BASF_MODULE_NAME}"
 
     # load the module file
-    modfile=$( find_optional_module "${module}" )
+    local BASF_MODULE_FILE=$( find_optional_module "${module}" )
 
     (
         # source the 'abstract base class' and then the 'concret implementation'.
         local basf_default=$( find_lib default )
-        [[ "$basf_default" ]]              || die "Can't locate default.${BASF_LIBRARY_EXTENSION}"
+        [[ "$basf_default" ]]              || die "Can't locate default lib"
         source "$basf_default" 2>/dev/null || die "Couldn't source '$basf_default'"
-        source "${modfile}" 2>/dev/null  || die "Couldn't source ${modfile}" # FIXME: does not print the module name if module is missing
+        source "${BASF_MODULE_FILE}" 2>/dev/null  || die "Couldn't source ${BASF_MODULE_FILE}" # FIXME: does not print the module name if module is missing
 
 # TODO: instead of "could not source", it should read "module not found, as message, not dying..."
 
@@ -241,8 +245,8 @@ inherit() {
     local x lib
     for x; do
         lib=$( find_lib "${x}" )
-        [[ -e ${lib} ]] || die "Can't locate library ${x}.${BASF_LIBRARY_EXTENSION}"
-        source "${lib}" || die "Couldn't source ${x}.${BASF_LIBRARY_EXTENSION}"
+        [[ -e ${lib} ]] || die "Can't locate library ${x}"
+        source "${lib}" || die "Couldn't source library ${x}"
     done
 }
 

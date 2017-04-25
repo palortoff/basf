@@ -14,7 +14,7 @@
 ##
 ## @note The comments in this file are not meant to explain how to write a
 ##       module. A documented example module can be found in the
-##       skeleton.${BASF_LIBRARY_EXTENSION} file.
+##       skeleton.${BASF_MODULE_EXTENSION} file.
 ###
 
 
@@ -64,7 +64,7 @@ describe_version() {
 ###
 do_version() {
     # display also module version information if this action was invoked on a module
-    [[ -n ${BASF_MODULE_NAME} && -n ${VERSION} ]] && echo "${BASF_MODULE_NAME}.${BASF_MODULE_EXTENSION} ${VERSION}"
+    [[ -n ${BASF_MODULE_NAME} && -n ${VERSION} ]] && echo "${BASF_MODULE_NAME} ${VERSION}"
     echo "${BASF_PROGRAM_NAME} ${BASF_PROGRAM_VERSION}"
     echo "BASF ${BASF_VERSION}"
 }
