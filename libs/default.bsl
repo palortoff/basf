@@ -28,7 +28,7 @@ declare DEFAULT_ACTION="help"
 
 ## @var VERSION
 ## @brief The version of this module
-declare VERSION=""
+declare VERSION="0.1.0"
 
 ###
 ## @protected

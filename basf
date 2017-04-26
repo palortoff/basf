@@ -29,7 +29,7 @@
 ## @var BASF_VERSION
 ## @brief The basf version string
 ## @showinitializer
-declare -xr BASF_VERSION="0.0.1"
+declare -xr BASF_VERSION="0.1.0"
 
 ## @brief This variable holds the process ID of the main basf program instance.
 declare -xr BASF_KILL_TARGET="$$"
