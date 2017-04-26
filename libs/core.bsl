@@ -146,6 +146,26 @@ check_do() {
     fi
 }
 
+get_module(){
+    parsedOptions=`getopt -q -- "" "$@"`
+    eval set -- "$parsedOptions"
+    shift
+
+    echo "${1##--}"
+}
+
+get_action(){
+    parsedOptions=`getopt -q -- "" "$@"`
+    eval set -- "$parsedOptions"
+    shift; shift
+
+    local action=""
+    if [ ! ${1:0:1} == "-" ]; then  # second argument unless starting with -- prefix
+        action="${1}"
+    fi
+    echo "${action}"
+}
+
 # FIXME: change function name.
 #       the prefix "do_" makes this actually an action for any module, but calling it results in an error
 
@@ -163,22 +183,8 @@ check_do() {
 ##
 ###
 do_action() {
-    # get only options without dashes
-    originalOptions=$@
-    parsedOptions=`getopt -q -- "" "$@"`
-    eval set -- "$parsedOptions"
-    shift
-
-    local module="${1##--}"     # first argument without optional -- prefix
-    shift
-
-    local action
-    if [ ! ${1:0:1} == "-" ]; then  # second argument unless starting with -- prefix
-        action="${1}"
-        shift
-    fi
-
-    eval set -- "$originalOptions"
+    local module=`get_module $@`
+    local action=`get_action $@`
 
     [[ ${1} == ${module} ]] && shift
     [[ ${1} == ${action} ]] && shift
