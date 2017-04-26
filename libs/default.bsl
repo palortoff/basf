@@ -85,10 +85,10 @@ describe_help() {
 ## @example `make_option --name "attach"   --short "a" --long "attach"   --desc "start in current console"`
 ###
 make_option() {
+    local long short desc hidden TEMP
     TEMP=`getopt --long short:,long:,desc:,name:,hidden -- funcname "$@"`
     eval set -- "$TEMP"
 
-    local long short desc hidden
 
     while true; do
         case "$1" in

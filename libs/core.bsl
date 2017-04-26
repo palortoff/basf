@@ -147,7 +147,7 @@ check_do() {
 }
 
 get_module(){
-    parsedOptions=`getopt -q -- "" "$@"`
+    local parsedOptions=`getopt -q -- "" "$@"`
     eval set -- "$parsedOptions"
     shift
 
@@ -155,7 +155,7 @@ get_module(){
 }
 
 get_action(){
-    parsedOptions=`getopt -q -- "" "$@"`
+    local parsedOptions=`getopt -q -- "" "$@"`
     eval set -- "$parsedOptions"
     shift; shift
 
