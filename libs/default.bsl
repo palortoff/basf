@@ -111,11 +111,14 @@ make_option() {
 }
 
 do_list_actions(){
+    local list_all
+    has_option "all" "$@"
+    list_all=$?
     #  set is a command every POSIX compatible shell must implement.
     #  POSIX also requires, that if set is called without arguments,
     #  set shall print all shell variables as key/value pairs.
     for action in $(set | sed -n -e '/^do_\S\+ ()\s*$/s/^do_\(\S\+\).*/\1/p' | sort); do
-        is_function "hide_${action}" && hide_${action} && ! has_option all "$@" && continue
+        is_function "hide_${action}" && hide_${action} && ! [ $list_all -eq 0 ] && continue
         [ $action == "action" ] && continue
         echo -n "$action "
     done
