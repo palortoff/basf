@@ -194,7 +194,6 @@ do_action() {
 
     # The module might find this information useful
     BASF_MODULE_NAME="${module}"
-    BASF_COMMAND="${BASF_BINARY_NAME} ${BASF_MODULE_NAME}"
 
     # load the module file
     local BASF_MODULE_FILE=$( find_optional_module "${module}" )
@@ -265,7 +264,7 @@ invoke() {
     local action="$2"
     shift; shift
 
-    $BASF_BINARY_NAME $module $action $@
+    $BASF_BINARY_FILEPATH $module $action $@
 }
 
 ###

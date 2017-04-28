@@ -8,9 +8,9 @@ do_usage(){
     echo
     write_bold_green "${BASF_PROGRAM_NAME} completion"
     echo
-    write_norm_yellow "source <(${BASF_BINARY_NAME} completion bash)"
+    write_norm_yellow "source <(${BASF_BINARY_FILENAME} completion bash)"
     echo or
-    write_norm_yellow "${BASF_BINARY_NAME} completion bash >> ~/.bashrc"
+    write_norm_yellow "${BASF_BINARY_FILENAME} completion bash >> ~/.bashrc"
     echo
 }
 
@@ -25,13 +25,13 @@ do_bash(){
 # ${BASF_PROGRAM_NAME} Bash Completion
 # =======================
 
-_${BASF_BINARY_NAME}_complete(){
+_${BASF_BINARY_FILENAME}_complete(){
     COMPREPLY=()
 
     local module
     cur=\${COMP_WORDS[COMP_CWORD]}
 
-    module=\$(_${BASF_BINARY_NAME}_get_module)
+    module=\$(_${BASF_BINARY_FILENAME}_get_module)
 
     case "\${module}" in
         help|version|usage)
@@ -40,7 +40,7 @@ _${BASF_BINARY_NAME}_complete(){
 
         *)
             if [ ! -z \$module ] && \$(\${COMP_WORDS[0]} modules has \$module) ; then
-                _${BASF_BINARY_NAME}_complete_module \$module
+                _${BASF_BINARY_FILENAME}_complete_module \$module
             else
                 MODULES=\$(\${COMP_WORDS[0]} modules list --only-names)
                 COMPREPLY=( \$( compgen -W "\$MODULES" -- \$cur ))
@@ -49,19 +49,19 @@ _${BASF_BINARY_NAME}_complete(){
         esac
 }
 
-_${BASF_BINARY_NAME}_complete_module(){
+_${BASF_BINARY_FILENAME}_complete_module(){
     local module="\${1}"
 
-    local action=\$(_${BASF_BINARY_NAME}_get_action)
+    local action=\$(_${BASF_BINARY_FILENAME}_get_action)
     if [ ! -z \$action ] && \$(\${COMP_WORDS[0]} \${module} has_action \${action}) ; then
-        _${BASF_BINARY_NAME}_complete_action \$module \$action
+        _${BASF_BINARY_FILENAME}_complete_action \$module \$action
     else
         ACTIONS=\$(\${COMP_WORDS[0]} \$module list_actions)
         COMPREPLY=( \$( compgen -W "\$ACTIONS" -- \$cur ))
     fi
 }
 
-_${BASF_BINARY_NAME}_complete_action(){
+_${BASF_BINARY_FILENAME}_complete_action(){
     local module="\${1}"
     local action="\${2}"
 
@@ -69,7 +69,7 @@ _${BASF_BINARY_NAME}_complete_action(){
     COMPREPLY=( \$( compgen -W "\$OPTIONS" -- \$cur ))
 }
 
-_${BASF_BINARY_NAME}_get_module(){
+_${BASF_BINARY_FILENAME}_get_module(){
 	local i
 
 	for ((i = 1; i < \${#COMP_WORDS[@]}; ++i)); do
@@ -80,7 +80,7 @@ _${BASF_BINARY_NAME}_get_module(){
 	done
 }
 
-_${BASF_BINARY_NAME}_get_action(){
+_${BASF_BINARY_FILENAME}_get_action(){
     local i
     local module_found=1
 
@@ -96,7 +96,7 @@ _${BASF_BINARY_NAME}_get_action(){
 	done
 }
 
-complete -F _${BASF_BINARY_NAME}_complete ${BASF_BINARY_NAME}
+complete -F _${BASF_BINARY_FILENAME}_complete ${BASF_BINARY_FILENAME}
 
 EOF
 }

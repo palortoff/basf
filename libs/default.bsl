@@ -45,7 +45,7 @@ describe_usage() {
 ## @brief Default usage action to display a brief usage help
 ###
 do_usage() {
-    echo "Usage: ${BASF_COMMAND} <action> [<options>]"
+    echo "Usage: ${BASF_BINARY_FILENAME} ${BASF_MODULE_NAME} <action> [<options>]"
 }
 
 ###
@@ -212,7 +212,7 @@ hide_has_action(){
 do_help() {
     [[ "${DESCRIPTION}" ]] && echo "${DESCRIPTION}"
 
-    echo "Usage: ${BASF_COMMAND} <action> <options>"
+    echo "Usage: ${BASF_BINARY_FILENAME} ${BASF_MODULE_NAME} <action> <options>"
     echo
 
     write_list_start "Standard actions:"

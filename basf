@@ -36,22 +36,18 @@ declare -xr BASF_KILL_TARGET="$$"
 declare -xr BASF_LIBRARY_EXTENSION="bsl"
 declare -xr BASF_MODULE_EXTENSION="bsm"
 
-[ -z ${BASF_BINARY_NAME} ] && declare -xr BASF_BINARY_NAME="`basename ${0}`"
-[ -z ${BASF_PROGRAM_NAME} ] && declare -xr BASF_PROGRAM_NAME="${BASF_BINARY_NAME}"
-[ -z ${BASF_PROGRAM_VERSION} ] && declare -xr BASF_PROGRAM_VERSION=${BASF_VERSION}
-
-find_link(){
+find_link_dir(){
     local rp=$(readlink --version &>/dev/null && readlink -e $1 2>/dev/null || echo $1)
     if [[ -z "$rp" ]]; then
-      echo "fatal: failed to execute 'readlink -e $1'."; exit 255
+        echo "fatal: failed to execute 'readlink -e $1'."; exit 255
     fi
 
     if [[ ! -f "$rp" ]]; then
-      echo "fatal: expected that '$rp' is a file." ; exit 255
+        echo "fatal: expected that '$rp' is a file." ; exit 255
     fi
 
     if [[ ! -e "$rp" ]]; then
-      echo "fatal: The file '$rp' exists, but is not executable." ; exit 255
+        echo "fatal: The file '$rp' exists, but is not executable." ; exit 255
     fi
 
     pushd `dirname $rp` > /dev/null
@@ -59,10 +55,15 @@ find_link(){
     popd > /dev/null
 }
 
+[ -z ${BASF_BINARY_FILEPATH} ] && declare -xr BASF_BINARY_FILEPATH="${0}"
+[ -z ${BASF_PROGRAM_VERSION} ] && declare -xr BASF_PROGRAM_VERSION=${BASF_VERSION}
+declare -xr BASF_BINARY_FILENAME=`basename ${BASF_BINARY_FILEPATH}`
+[ -z ${BASF_PROGRAM_NAME} ] && declare -xr BASF_PROGRAM_NAME="${BASF_BINARY_FILENAME}"
+
 ## @brief The root directory of the basf program installation
-declare -x -r BASF_PROGRAM_ROOT="$(find_link $0)"
+declare -x -r BASF_PROGRAM_ROOT="$(find_link_dir $0)"
 ## @brief The root directory of the basf installation
-declare -x -r BASF_ROOT="$(find_link ${BASH_SOURCE[0]})"
+declare -x -r BASF_ROOT="$(find_link_dir ${BASH_SOURCE[0]})"
 
 ## @brief Array containing a list of library search paths
 BASF_LIB_PATH=( \
@@ -161,7 +162,7 @@ core="$( find_lib 'core' )"
 if [[ "$core" ]] ; then
     source "$core" || exit 255
 else
-    echo "fatal: ${BASF_BINARY_NAME} core library not found.";
+    echo "fatal: ${BASF_PROGRAM_NAME} core library not found.";
     exit 255;
 fi
 
@@ -179,11 +180,11 @@ load_settings(){
 }
 
 load_settings "${BASF_ROOT}/basf.conf"
-load_settings "${BASF_PROGRAM_ROOT}/${BASF_BINARY_NAME}.conf"
+load_settings "${BASF_PROGRAM_ROOT}/${BASF_PROGRAM_NAME}.conf"
 load_settings "${BASF_ROOT}/basf.user.conf"
-load_settings "${BASF_PROGRAM_ROOT}/${BASF_BINARY_NAME}.user.conf"
+load_settings "${BASF_PROGRAM_ROOT}/${BASF_PROGRAM_NAME}.user.conf"
 load_settings "${HOME}/.basf"
-load_settings "${HOME}/.${BASF_BINARY_NAME}"
+load_settings "${HOME}/.${BASF_PROGRAM_NAME}"
 
 
 ## Sneaky trick to make die in subshells work.
@@ -202,7 +203,7 @@ trap '[ $? -ne 249 ] || exit 249' ERR
 ## @note This function will not terminate the program
 ###
 basf_do_usage() {
-    echo "Usage: ${BASF_BINARY_NAME} [global options] command [options]"
+    echo "Usage: ${BASF_BINARY_FILENAME} [global options] command [options]"
 }
 
 ###
