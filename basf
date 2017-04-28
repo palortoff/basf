@@ -78,7 +78,7 @@ BASF_LIB_PATH=( \
     "/opt/basf/libs" \
 )
 
-[ ! -z ${BASF_CUSTOM_LIB_PATH} ] && BASF_LIB_PATH=("${BASF_CUSTOM_LIB_PATH}" "${BASF_LIB_PATH}")
+[ ! -z ${BASF_CUSTOM_LIB_PATH} ] && BASF_LIB_PATH=("${BASF_CUSTOM_LIB_PATH}" "${BASF_LIB_PATH[@]}")
 
 ## @brief Array containing a list of module search paths
 BASF_MODULES_PATH=( \
@@ -94,7 +94,7 @@ BASF_MODULES_PATH=( \
     "/opt/basf/modules" \
 )
 
-[ ! -z ${BASF_CUSTOM_MODULE_PATH} ] && BASF_MODULES_PATH=("${BASF_CUSTOM_MODULE_PATH}" "${BASF_MODULES_PATH}")
+[ ! -z ${BASF_CUSTOM_MODULE_PATH} ] && BASF_MODULES_PATH=("${BASF_CUSTOM_MODULE_PATH}" "${BASF_MODULES_PATH[@]}")
 
 ## Remove all alias definitions and unset functions and
 ## variables that are known to cause trouble.
