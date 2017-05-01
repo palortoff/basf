@@ -86,7 +86,7 @@ describe_help() {
 ###
 make_option() {
     local long short desc hidden TEMP
-    TEMP=`getopt --long short:,long:,desc:,name:,hidden -- funcname "$@"`
+    TEMP=`getopt --longoptions short:,long:,desc:,name:,hidden -- funcname "$@"`
     eval set -- "$TEMP"
 
 
@@ -138,7 +138,7 @@ describe_list_actions_options(){
 do_list_action_options(){
     local do_list_action_options_parameters="$@"
     make_option() {
-        TEMP=`getopt --long short:,long:,desc:,name:,hidden -- funcname "$@"`
+        TEMP=`getopt --longoptions short:,long:,desc:,name:,hidden -- funcname "$@"`
         eval set -- "$TEMP"
 
         local long short
