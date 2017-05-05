@@ -112,7 +112,6 @@ if (( BASH_VERSINFO[0] == 4 && BASH_VERSINFO[1] >= 1 || BASH_VERSINFO[0] > 4 ));
     exec {BASF_STDERR}>&2    # >=bash-4.1
 fi
 
-
 ###
 ## @fn find_lib()
 ##
@@ -174,7 +173,7 @@ inherit config output tests
 ## Load settings
 
 load_settings(){
-    if [[ -r "${1}" ]] ; then
+    if [[ -f "${1}" ]] && [[ -r "${1}" ]] ; then
         source "${1}" 2> /dev/null || die -q "Failed to source '${1}'"
     fi
 }
@@ -185,7 +184,6 @@ load_settings "${BASF_ROOT}/basf.user.conf"
 load_settings "${BASF_PROGRAM_ROOT}/${BASF_PROGRAM_NAME}.user.conf"
 load_settings "${HOME}/.basf"
 load_settings "${HOME}/.${BASF_PROGRAM_NAME}"
-
 
 ## Sneaky trick to make die in subshells work.
 ## If you don't get it, don't ask...
