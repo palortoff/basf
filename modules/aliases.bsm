@@ -1,0 +1,64 @@
+#!/bin/bash
+
+HIDDENMODULE=1
+
+# TODO: this file duplicates most the code of the modules module. code should be re-used
+
+do_list(){
+    local path file list_all
+    # alias_ name desc
+    local -a aliases
+
+    has_option "all" "$@"
+    list_all=$?
+
+    for path in "${BASF_ALIASES_PATH[@]}"; do
+        # TODO: DRY
+        for file in "${path}"/*.${BASF_MODULE_EXTENSION} ; do
+            [[ -f ${file} ]] || continue
+            [ $list_all -eq 1 ] && [ "$(read_config_value "${file}" HIDDENMODULE)" == "1" ] && continue
+
+            aliases=( "${aliases[@]}" "${file}" )
+        done
+        if [ ! -z ${BASF_CUSTOM_MODULE_EXTENSION} ]; then
+            for file in "${path}"/*.${BASF_CUSTOM_MODULE_EXTENSION} ; do
+                [[ -f ${file} ]] || continue
+                [ $list_all -eq 1 ] && [ "$(read_config_value "${file}" HIDDENMODULE)" == "1" ] && continue
+
+                aliases=( "${aliases[@]}" "${file}" )
+            done
+        fi
+    done
+
+    if has_option "only_names" $@; then
+        for alias_ in "${aliases[@]}" ; do
+            name=${alias_##*/}
+            name=${name%%.${BASF_MODULE_EXTENSION}}
+            name=${name%%.${BASF_CUSTOM_MODULE_EXTENSION}}
+            echo "${name}"
+        done
+    else
+        if [[ ${#aliases[@]} -gt 0 ]] ; then
+            echo
+            write_list_start "Aliases:"
+            for alias_ in "${aliases[@]}" ; do
+                name=${alias_##*/}
+                name=${name%%.${BASF_MODULE_EXTENSION}}
+                name=${name%%.${BASF_CUSTOM_MODULE_EXTENSION}}
+                desc="$(read_config_value "${alias_}" DESCRIPTION) " || killme
+                desc=${desc:-No description available}
+                write_kv_list_entry "${name}" "${desc}"
+            done
+        fi
+    fi
+
+}
+
+describe_list(){
+    echo "List all available aliases"
+}
+
+describe_list_options(){
+    make_option --name "only_names" --long "only-names" --short "n" --desc "Output names of modules only"
+    make_option --name "all"        --long "all"        --short "a" --desc "Do not omit hidden modules"
+}

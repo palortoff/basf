@@ -112,7 +112,7 @@ find_optional_module() {
     local modname=$1
     local modpath
 
-    for modpath in "${BASF_MODULES_PATH[@]}"; do
+    for modpath in "${BASF_MODULES_PATH[@]} ${BASF_ALIASES_PATH[@]}"; do
         if [[ -f "${modpath}/${modname}.${BASF_MODULE_EXTENSION}" ]]; then
             echo "${modpath}/${modname}.${BASF_MODULE_EXTENSION}"
             return

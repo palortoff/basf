@@ -97,6 +97,23 @@ BASF_MODULES_PATH=( \
 
 [ ! -z ${BASF_CUSTOM_MODULE_PATH} ] && BASF_MODULES_PATH=("${BASF_CUSTOM_MODULE_PATH}" "${BASF_MODULES_PATH[@]}")
 
+# TODO: DRY: lists are all composed the same way
+## @brief Array containing a list of alias search paths
+BASF_ALIASES_PATH=( \
+    "${HOME}/.${BASF_PROGRAM_NAME}/aliases" \
+    "${HOME}/.basf/aliases" \
+    "${BASF_PROGRAM_ROOT}/aliases" \
+    "${BASF_ROOT}/aliases" \
+    "/usr/share/${BASF_PROGRAM_ROOT}/aliases" \
+    "/usr/share/basf/aliases" \
+    "/usr/local/share/${BASF_PROGRAM_ROOT}/aliases" \
+    "/usr/local/share/basf/aliases" \
+    "/opt/${BASF_PROGRAM_ROOT}/aliases" \
+    "/opt/basf/aliases" \
+)
+
+[ ! -z ${BASF_CUSTOM_ALIASES_PATH} ] && BASF_ALIASES_PATH=("${BASF_CUSTOM_ALIASES_PATH}" "${BASF_ALIASES_PATH[@]}")
+
 ## Remove all alias definitions and unset functions and
 ## variables that are known to cause trouble.
 "unalias" -a
@@ -216,17 +233,18 @@ basf_do_usage() {
 ###
 basf_do_help() {
     basf_do_usage
-    echo
 
+    # TODO: disabled for now. figure out how to display best...
     # display all recognized global options
-    write_list_start "Global options:"
-    write_kv_list_entry "--brief" "Make output shorter"
-    write_kv_list_entry "--color=<yes|no|auto>" "Enable or disable color output (default 'auto')"
-    echo
+    # write_list_start "Global options:"
+    # write_kv_list_entry "--brief" "Make output shorter"
+    # write_kv_list_entry "--color=<yes|no|auto>" "Enable or disable color output (default 'auto')"
+    # echo
 
     # TODO: shouldn't this be called like "invoke modules list?"
     # display all available basf modules
     do_action modules list
+    do_action aliases list
 }
 
 

@@ -42,10 +42,11 @@ do_list() {
     done
 
     if [[ ${only_names} -eq 0 ]]; then
+        # TODO: disabled for now. add -v option or something like that...
         # This is mainly intended for bash completion
-        echo "help"
-        echo "usage"
-        echo "version"
+        # echo "help"
+        # echo "usage"
+        # echo "version"
         for module in "${extra_modules[@]}" ; do
             name=${module##*/}
             name=${name%%.${BASF_MODULE_EXTENSION}}
@@ -53,14 +54,15 @@ do_list() {
             echo "${name}"
         done
     else
-        write_list_start "Built-in modules:"
-        write_kv_list_entry "help"          "Display a help message"
-        write_kv_list_entry "usage"         "Display a usage message"
-        write_kv_list_entry "version"       "Display version information"
+        # TODO: disabled for now. add -v option or something like that...
+        # write_list_start "Built-in modules:"
+        # write_kv_list_entry "help"          "Display a help message"
+        # write_kv_list_entry "usage"         "Display a usage message"
+        # write_kv_list_entry "version"       "Display version information"
 
         if [[ ${#extra_modules[@]} -gt 0 ]] ; then
             echo
-            write_list_start "Extra modules:"
+            write_list_start "Modules:"
             for module in "${extra_modules[@]}" ; do
                 name=${module##*/}
                 name=${name%%.${BASF_MODULE_EXTENSION}}
