@@ -276,5 +276,16 @@ do_help() {
     true
 }
 
+hide_help(){
+    return 0
+}
+
+hide_usage(){
+    return 0
+}
+
+hide_version(){
+    return 0
+}
 
 # vi: set shiftwidth=4 tabstop=4 expandtab:

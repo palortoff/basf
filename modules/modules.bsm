@@ -76,7 +76,7 @@ do_list() {
 }
 
 describe_has() {
-    echo "Return true if the module is installed, otherwise false."
+    echo "Return true if the module or alias is installed, otherwise false."
 }
 
 describe_has_parameters() {
@@ -87,14 +87,14 @@ do_has() {
     [[ -z $1 ]]    && die -q "Required option (module name) missing"
     [[ $# -gt 1 ]] && die -q "Too many parameters"
 
-    local modname=$1 modpath
+    local modname=$1
 
     for path in "${BASF_MODULES_PATH[@]}"; do
         [[ -f "${path}/${modname}.${BASF_MODULE_EXTENSION}" ]] && return 0
         [[ -f "${path}/${modname}.${BASF_CUSTOM_MODULE_EXTENSION}" ]] && return 0
     done
 
-    return 1
+    invoke aliases has $@
 }
 
 

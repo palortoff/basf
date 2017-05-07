@@ -59,6 +59,28 @@ describe_list(){
 }
 
 describe_list_options(){
-    make_option --name "only_names" --long "only-names" --short "n" --desc "Output names of modules only"
-    make_option --name "all"        --long "all"        --short "a" --desc "Do not omit hidden modules"
+    make_option --name "only_names" --long "only-names" --short "n" --desc "Output names of aliases only"
+    make_option --name "all"        --long "all"        --short "a" --desc "Do not omit hidden aliases"
+}
+
+describe_has() {
+    echo "Return true if the alias is installed, otherwise false."
+}
+
+describe_has_parameters() {
+    echo "<alias>"
+}
+
+do_has() {
+    [[ -z $1 ]]    && die -q "Required option (alias name) missing"
+    [[ $# -gt 1 ]] && die -q "Too many parameters"
+
+    local alias_name=$1
+
+    for path in "${BASF_ALIASES_PATH[@]}"; do
+        [[ -f "${path}/${alias_name}.${BASF_MODULE_EXTENSION}" ]] && return 0
+        [[ -f "${path}/${alias_name}.${BASF_CUSTOM_MODULE_EXTENSION}" ]] && return 0
+    done
+
+    return 1
 }

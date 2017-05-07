@@ -42,7 +42,7 @@ _${BASF_BINARY_FILENAME}_complete(){
             if [ ! -z \$module ] && \$(\${COMP_WORDS[0]} modules has \$module) ; then
                 _${BASF_BINARY_FILENAME}_complete_module \$module
             else
-                MODULES=\$(\${COMP_WORDS[0]} modules list --only-names)
+                MODULES=\$(\${COMP_WORDS[0]} modules list --only-names; \${COMP_WORDS[0]} aliases list --only-names)
                 COMPREPLY=( \$( compgen -W "\$MODULES" -- \$cur ))
             fi
             ;;
