@@ -48,7 +48,7 @@ has_option(){
     if is_function describe_${action}_options; then
         describe_${action}_options
 
-        local TEMP=`getopt -q --longoptions ${longs} --options ${options} -- $@`
+        local TEMP=`getopt -q --longoptions "${longs}" --options "${options}" -- $@`
         eval set -- "$TEMP"
 
         while true; do
