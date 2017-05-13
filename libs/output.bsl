@@ -179,7 +179,7 @@ write_block_fail() {
      echo
 }
 
-
+# TODO: remove
 ###
 # PUBLIC set_output_mode
 #

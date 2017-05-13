@@ -3,77 +3,8 @@
 # TODO: move tests into own module
 
 #
-# == Keep off the grass! ==
-#
-# Global scope code is forbidden in modules and libraries.
-#
-# Your module will be sourced for tasks other than running your actions.
-# For example, your module will be sourced to obtain the description.
-# Any code being run here would be a very bad thing!
-#
-
-
-# == basf ==
-# basf is a minimalist framework to write command line programms under the
-# umbrella of the basf command, organized in modules and with a simple and unique
-# interface.
-#
-# The typical invocation of basf on the command prompt is:
-# $ basf <module> <action> [options...]
-#
-#
-# == Module ==
-# a module is a container that organizes a set of related commands - the actions.
-#
-# From the user perspective, the call of an module and it's action is similar to
-# call a command on the command line. But instead of grouping several related
-# commands loosely by a similar name, a module groups this commands into the same
-# namespace.
-#
-# In addition to the actions a module provides typically other common information,
-# such a description and a help.
-#
-# Bash and therefore modules supports inheritance and each module automatically
-# inherits from a default.${BASF_MODULE_EXTENSION} module (it is located in the libs/ directory).
-#
-#
-# == Actions ==
-# actions are functions that can be called by the user. Or if you think OOP,
-# then you can also say that these are the public methods of your modules.
-#
-# Within a module a normal bash function is an action if it starts with
-# the prefix do_. A action can request any parameter like every other function
-# within the $@ variable and that works as expected. I.e. every value after
-# <action> is passed as a parameter to the action.
-#
-# There are also some predefined actions. These are:
-#   usage
-#   version
-#   help
-#
-# These actions do what they obviously should do.
-# You can overwrite this actions but usually there is no good reason to do it.
-# By the way, the default implementation of these functions can be found in
-# libs/default.${BASF_LIBRARY_EXTENSION}.
-#
 
 #
-# The following variable are optional.
-# If they are not defined they are initialized with the following values
-#
-
-# Description of this module
-DESCRIPTION=""
-
-# The default action if none is given
-DEFAULT_ACTION="usage"
-
-# The version of this module
-VERSION="0.1.0"
-
-# Hide this module in the module overview.
-HIDDENMODULE=0
-
 
 # Since this module should not appear in the module overview,
 # we quickly set the value to true
@@ -117,12 +48,7 @@ describe_world_options() {
 
 
 #
-# By default, an error is thrown when the requested action was not found.
-# However, if a function __action exists, then this function is called instead.
 #
-# Notice that this function is called for all unknown actions, but not if
-# no action is specified at all. For that case look at DEFAULT_ACTION and
-# __module().
 #
 
 __action() {
@@ -134,20 +60,7 @@ __action() {
 
 
 #
-# There are several ways to control the behavior when the module was called
-# without specifying an action.
-#
-# First, there is the default behavior. If nothing else works, then the function
-# do_usage is called. This function is already defined in the base file and
-# therefore pretty sure available.
-#
-# The first way to change this behavior is to set another default action
-# using DEFAULT_ACTION as described above.
-#
-# The second, not recommended, way is the most obvious - overwrite
-# the do_usage function.
-#
-# A third possibility is to implement the __module function.
+
 #
 #
 __module() {
