@@ -1,0 +1,14 @@
+#!/bin/bash
+
+DESCRIPTION="Display version information"
+VERSION=0.1.0
+HIDDENMODULE=1
+
+__module(){
+    echo "${BASF_PROGRAM_NAME} ${BASF_PROGRAM_VERSION}"
+    echo "BASF ${BASF_VERSION}"
+}
+
+__action(){
+    invoke $action version
+}

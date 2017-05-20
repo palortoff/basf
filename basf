@@ -208,59 +208,6 @@ set -E                                  # shell functions inherits the ERR trap
 trap '[ $? -ne 249 ] || exit 249' ERR
 
 
-###
-## @private
-## @fn basf_do_usage()
-## @brief Print the basf usage string.
-##
-## A function that simply echoes a default usage string to stdout.
-##
-## @note This function will not terminate the program
-###
-basf_do_usage() {
-    echo "Usage: ${BASF_BINARY_FILENAME} [global options] command [options]"
-}
-
-###
-## @private
-## @fn basf_do_help()
-## @brief Print the basf help screen.
-##
-## This function displays the basf help screen which
-## includes information about all available modules.
-##
-## @note This function will not terminate the program
-###
-basf_do_help() {
-    basf_do_usage
-
-    # TODO: disabled for now. figure out how to display best...
-    # display all recognized global options
-    # write_list_start "Global options:"
-    # write_kv_list_entry "--brief" "Make output shorter"
-    # write_kv_list_entry "--color=<yes|no|auto>" "Enable or disable color output (default 'auto')"
-    # echo
-
-    # TODO: shouldn't this be called like "invoke modules list?"
-    # display all available basf modules
-    do_action modules list
-    do_action aliases list
-}
-
-
-###
-## @private
-## @fn basf_do_version()
-## @brief Print the basf version string.
-##
-## A function that simply echoes the version string to stdout.
-##
-## @note This function will not terminate the program
-###
-basf_do_version() {
-    echo "${BASF_PROGRAM_NAME} ${BASF_PROGRAM_VERSION}"
-    echo "BASF ${BASF_VERSION}"
-}
 
 ##############################################################################
 ###### main code #############################################################
@@ -312,24 +259,9 @@ fi
 unset color
 
 if [[ -n ${action} ]]; then
-    # Make help <module> an alias for <module> help
-    if [[ ${action,,} == "help" && $# -gt 0 && ${1,,} != "help" ]]; then
-       mod=$1
-       shift
-       "$0" "$mod" "help" "$@"
-       exit $?
-    fi
-
-    # if the function is a built in function
-    if is_function "basf_do_${action}"; then
-        [[ $# -eq 0 ]] || die -q "Too many parameters"
-        basf_do_${action}
-    else
-        # search and execute the action
-        do_action "${action}" "$@"
-    fi
+    do_action "${action}" "$@"
 else
-    basf_do_help
+    do_action help
 fi
 
 # vi: set shiftwidth=4 tabstop=4 expandtab:

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+DESCRIPTION="Display usage information"
+VERSION=0.1.0
+HIDDENMODULE=1
+
+__module(){
+    echo "Usage: ${BASF_BINARY_FILENAME} [global options] command [options]"
+}
+
+__action(){
+    invoke $action usage
+}
