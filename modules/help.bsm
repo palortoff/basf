@@ -10,7 +10,6 @@ __module(){
     # TODO: disabled for now. figure out how to display best...
     # display all recognized global options
     # write_list_start "Global options:"
-    # write_kv_list_entry "--brief" "Make output shorter"
     # write_kv_list_entry "--color=<yes|no|auto>" "Enable or disable color output (default 'auto')"
     # echo
 

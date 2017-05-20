@@ -179,27 +179,6 @@ write_block_fail() {
      echo
 }
 
-# TODO: remove
-###
-# PUBLIC set_output_mode
-#
-# set output mode to $1
-###
-set_output_mode() {
-    BASF_OUTPUT_MODE=$1
-}
-
-
-###
-# PUBLIC is_output_mode
-#
-# test if $1 is the current output mode
-###
-is_output_mode() {
-    [[ ${BASF_OUTPUT_MODE} = $1 ]]
-}
-
-
 ###
 # PRIVATE init_columns
 #
@@ -246,8 +225,6 @@ write_info_msg() {
 # Write a list headline. If -p is passed, the output is forced to plain.
 ###
 write_list_start() {
-    is_output_mode brief && return
-
     local color=${COLOR_LIST_HEADER} normal=${COLOR_NORMAL}
     if [[ $1 == "-p" ]]; then
         color=; normal=
@@ -299,22 +276,17 @@ write_kv_list_entry() {
 
     # if ${n} is less than or equal to zero then we have a long ${key}
     # that will mess up the formatting of ${val}, so end the line, indent
-    # and let ${val} go on the next line. Don't start a new line when
-    # in brief output mode, in order to keep the output easily parsable.
+    # and let ${val} go on the next line.
     if [[ ${n} -le 0 ]]; then
-        if is_output_mode brief; then
-            n=1
-        else
-            echo
-            n=$(( 28 + ${#rindent} ))
-        fi
+        echo
+        n=$(( 28 + ${#rindent} ))
     fi
 
     echo -n -e "$(space ${n})${right}"
     n=$(( 28 + ${#rindent} ))
 
     # only loop if it doesn't fit on the same line
-    if [[ $(( ${n} + ${#text} )) -ge ${cols} ]] && ! is_output_mode brief; then
+    if [[ $(( ${n} + ${#text} )) -ge ${cols} ]]; then
         local i=0 spc=""
         rindent=$(space ${n})
         local cwords=( $(apply_text_highlights "${right}" "${val}") )
@@ -354,12 +326,10 @@ write_numbered_list_entry() {
         shift
     fi
 
-    if ! is_output_mode brief; then
-        echo -n -e "  ${left}"
-        echo -n -e "[$(apply_text_highlights "${left}" "$1")]"
-        echo -n -e "${normal}"
-        space $(( 4 - ${#1} ))
-    fi
+    echo -n -e "  ${left}"
+    echo -n -e "[$(apply_text_highlights "${left}" "$1")]"
+    echo -n -e "${normal}"
+    space $(( 4 - ${#1} ))
 
     echo -n -e "${right}"
     echo -n -e "$(apply_text_highlights "${right}" "$2")"
@@ -367,11 +337,9 @@ write_numbered_list_entry() {
     [[ -n "$3" ]] && echo -n $3 && space $(( 26 - ${#3} ))
     echo -ne "${normal}"
 
-    if ! is_output_mode brief; then
-        echo -n -e "  ${extra}"
-        echo -n -e "$(apply_text_highlights "${extra}" "$4")"
-        echo -n -e "${normal}"
-    fi
+    echo -n -e "  ${extra}"
+    echo -n -e "$(apply_text_highlights "${extra}" "$4")"
+    echo -n -e "${normal}"
 
     echo -e "${normal}"
 }
@@ -420,7 +388,7 @@ highlight_warning() {
 highlight_marker() {
     local text=$1 mark=${2-*}
     echo -n "${text}"
-    if [[ -n ${mark} ]] && ! is_output_mode brief; then
+    if [[ -n ${mark} ]]; then
         echo -n " "
         highlight "${mark}"
     fi

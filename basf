@@ -216,9 +216,6 @@ trap '[ $? -ne 249 ] || exit 249' ERR
 # parse global options
 while [[ ${1##--} != "$1" ]]; do
     case ${1##--} in
-        brief)
-            set_output_mode brief
-            ;;
         color=*|colour=*|color|colour)
             # accept all arguments that are valid for ls
             case ${1#*=} in
