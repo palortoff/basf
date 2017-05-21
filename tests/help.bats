@@ -6,7 +6,7 @@ load test_env
     run ${SUT} help_output help
     [ ${status} -eq 0 ]
     [ ${#lines[@]} -eq 11 ]
-    [ ${lines[0]}  = "Usage: sut help_output <action> <options>" ]
+    [ ${lines[0]}  = "Usage: sut help_output <action> [<options>]" ]
     [ ${lines[1]}  = "Standard actions:" ]
     [ ${lines[2]}  = "  help                      Display help text" ]
     [ ${lines[3]}  = "  usage                     Display usage information" ]
@@ -17,5 +17,4 @@ load test_env
     [ ${lines[8]}  = "    -f --first                first" ]
     [ ${lines[9]}  = "    -s --second               second" ]
     [ ${lines[10]} = "    -t --third                third" ]
-
 }

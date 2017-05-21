@@ -39,13 +39,20 @@ describe_usage() {
     echo "Display usage information"
 }
 
+default_usage(){
+    echo "Usage: ${BASF_BINARY_FILENAME} ${BASF_MODULE_NAME} <action> [<options>]"
+}
 ###
 ## @protected
 ## @fn do_usage()
 ## @brief Default usage action to display a brief usage help
 ###
 do_usage() {
-    echo "Usage: ${BASF_BINARY_FILENAME} ${BASF_MODULE_NAME} <action> [<options>]"
+    default_usage
+}
+
+hide_usage(){
+    return 0
 }
 
 ###
@@ -69,13 +76,8 @@ do_version() {
     echo "BASF ${BASF_VERSION}"
 }
 
-###
-## @protected
-## @fn describe_help()
-## @brief Default description for the help action
-###
-describe_help() {
-    echo "Display help text"
+hide_version(){
+    return 0
 }
 
 ###
@@ -209,69 +211,25 @@ hide_has_action(){
 ## @fn do_help()
 ## @brief Default help action to display module related help
 ###
+###
+## @protected
+## @fn describe_help()
+## @brief Default description for the help action
+###
+describe_help() {
+    echo "Display help text"
+}
+
 do_help() {
     [[ "${DESCRIPTION}" ]] && echo "${DESCRIPTION}"
 
-    echo "Usage: ${BASF_BINARY_FILENAME} ${BASF_MODULE_NAME} <action> <options>"
+    default_usage $@
     echo
 
-    write_list_start "Standard actions:"
-    for action in help usage version; do
-        local desc=""
-        is_function "describe_${action}" && desc=$(describe_${action})
-        write_kv_list_entry "${action}" "${desc:-(no description)}"
-    done
-
+    print_help_builtin $@
     echo
-    write_list_start "Extra actions:"
 
-    local actionList
-    read -r -a actionList <<< `do_list_actions "$@"`
-
-    # The for loop interates over all shell variables which are functions
-    # _and_ starts with the prefix "do_". In the body of the loop the $action
-    # variable contains the name of the function without the do_ prefix
-    # or " ()" suffix.
-    for action in "${actionList[@]}"; do
-        case "${action}" in
-            help|usage|version|action)
-                continue
-                ;;
-            ?*)
-                # call corresponding functions if available to read the descriptions
-                local desc=""
-                is_function "describe_${action}" && desc=$(describe_${action})
-
-                local name="${action}"
-                if is_function "name_${action}" ; then
-                    name="$(name_${action})"
-                    desc="${desc:- }"
-                fi
-
-                local text="${name}"
-                if is_function "describe_${action}_parameters"; then
-                    text+=" $(describe_${action}_parameters)"
-                fi
-
-                # display entry
-                write_kv_list_entry "${text}" "${desc:-(no description)}"
-
-                # print optional options
-                if is_function "describe_${action}_options"; then
-                    local line
-                    local options=$(describe_${action}_options)
-                    local ifs_save=${IFS} IFS=$'\n'
-                    for line in ${options}; do
-                        write_kv_list_entry -p \
-                            "  ${line%%*( ):*}" \
-                            "  ${line##+([^:]):*( )}"
-                    done
-                    echo
-                    IFS=${ifs_save}
-                fi
-                ;;
-        esac
-    done
+    print_help_module $@
 
     true
 }
@@ -280,12 +238,58 @@ hide_help(){
     return 0
 }
 
-hide_usage(){
-    return 0
+print_help_builtin(){
+    write_list_start "Standard actions:"
+    for action in help usage version; do
+        local desc=""
+        is_function "describe_${action}" && desc=$(describe_${action})
+        write_kv_list_entry "${action}" "${desc:-(no description)}"
+    done
 }
 
-hide_version(){
-    return 0
+print_help_module(){
+        write_list_start "Extra actions:"
+
+        local actionList
+        read -r -a actionList <<< `do_list_actions "$@"`
+
+        # The for loop interates over all shell variables which are functions
+        # _and_ starts with the prefix "do_". In the body of the loop the $action
+        # variable contains the name of the function without the do_ prefix
+        # or " ()" suffix.
+        for action in "${actionList[@]}"; do
+            # call corresponding functions if available to read the descriptions
+            local desc=""
+            is_function "describe_${action}" && desc=$(describe_${action})
+
+            local name="${action}"
+            if is_function "name_${action}" ; then
+                name="$(name_${action})"
+                desc="${desc:- }"
+            fi
+
+            local text="${name}"
+            if is_function "describe_${action}_parameters"; then
+                text+=" $(describe_${action}_parameters)"
+            fi
+
+            # display entry
+            write_kv_list_entry "${text}" "${desc:-(no description)}"
+
+            # print optional options
+            if is_function "describe_${action}_options"; then
+                local line
+                local options=$(describe_${action}_options)
+                local ifs_save=${IFS} IFS=$'\n'
+                for line in ${options}; do
+                    write_kv_list_entry -p \
+                        "  ${line%%*( ):*}" \
+                        "  ${line##+([^:]):*( )}"
+                done
+                echo
+                IFS=${ifs_save}
+            fi
+        done
 }
 
 # vi: set shiftwidth=4 tabstop=4 expandtab:
