@@ -1,5 +1,7 @@
 # BaSF - Bash Scripting Framework
 
+[![Build Status](https://travis-ci.org/palortoff/basf.svg?branch=master)](https://travis-ci.org/palortoff/basf)
+
 basf is a minimalist framework to write command line applications under the
 umbrella of the basf command, organized in modules and with a simple and unique
 interface.
