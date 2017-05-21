@@ -19,5 +19,4 @@ describe_has_option_options(){
     make_option --name "first" --short "f" --long "first" --desc "some first"
     make_option --name "second" --short "s" --long "second" --desc "some second"
     make_option --name "third" --short "t" --long "third" --desc "some third"
-
 }
