@@ -5,3 +5,8 @@ before_install:
   - sudo apt-get install -qq bats
 script:
   - bats tests
+
+notifications:
+  email:
+    on_success: change
+    on_failure: always

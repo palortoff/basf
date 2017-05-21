@@ -1,93 +1,93 @@
 #!/usr/bin/env bats
 
-p=./tests/test_program/p
+load test_env
 
 @test "#has_no_option called without option returns 0" {
-  run ${p} action_options has_no_option
+  run ${SUT} action_options has_no_option
   [ "${status}" -eq 0 ]
 }
 
 @test "#has_no_option called with parameter returns 0" {
-  run ${p} action_options has_no_option param
+  run ${SUT} action_options has_no_option param
   [ "${status}" -eq 0 ]
 }
 
 @test "#has_no_option called with existing option returns 1" {
-  run ${p} action_options has_no_option --option
+  run ${SUT} action_options has_no_option --option
   [ "${status}" -eq 1 ]
 }
 
 @test "#has_no_option called with non-existing option returns 1" {
-  run ${p} action_options has_no_option --other_option
+  run ${SUT} action_options has_no_option --other_option
   [ "${status}" -eq 1 ]
 }
 
 @test "#has_option called with no option will activate no option" {
-    run ${p} action_options has_option
+    run ${SUT} action_options has_option
     [ ${#lines[@]} -eq 0 ]
 }
 
 @test "#has_option called with one option (long) will activate the option" {
-    run ${p} action_options has_option --first
+    run ${SUT} action_options has_option --first
     [ ${#lines[@]} -eq 1 ]
     [ "${lines[0]}" = "first" ]
 }
 
 @test "#has_option called with one option (short) will activate the option" {
-    run ${p} action_options has_option -f
+    run ${SUT} action_options has_option -f
     [ ${#lines[@]} -eq 1 ]
     [ "${lines[0]}" = "first" ]
 }
 
 @test "#has_option called with another option (long) will activate the option" {
-    run ${p} action_options has_option --second
+    run ${SUT} action_options has_option --second
     [ ${#lines[@]} -eq 1 ]
     [ "${lines[0]}" = "second" ]
 }
 
 @test "#has_option called with another option (short) will activate the option" {
-    run ${p} action_options has_option -s
+    run ${SUT} action_options has_option -s
     [ ${#lines[@]} -eq 1 ]
     [ "${lines[0]}" = "second" ]
 }
 
 @test "#has_option called with two options (long) will activate the option" {
-    run ${p} action_options has_option --first --second
+    run ${SUT} action_options has_option --first --second
     [ ${#lines[@]} -eq 2 ]
     [ "${lines[0]}" = "first" ]
     [ "${lines[1]}" = "second" ]
 }
 
 @test "#has_option called with two options (long, reversed) will activate the option" {
-    run ${p} action_options has_option --second --first
+    run ${SUT} action_options has_option --second --first
     [ ${#lines[@]} -eq 2 ]
     [ "${lines[0]}" = "first" ]
     [ "${lines[1]}" = "second" ]
 }
 
 @test "#has_option called with two options (short) will activate the option" {
-    run ${p} action_options has_option -f -s
+    run ${SUT} action_options has_option -f -s
     [ ${#lines[@]} -eq 2 ]
     [ "${lines[0]}" = "first" ]
     [ "${lines[1]}" = "second" ]
 }
 
 @test "#has_option called with two options (short, reversed) will activate the option" {
-    run ${p} action_options has_option -s -f
+    run ${SUT} action_options has_option -s -f
     [ ${#lines[@]} -eq 2 ]
     [ "${lines[0]}" = "first" ]
     [ "${lines[1]}" = "second" ]
 }
 
 @test "#has_option called with two options (short combined) will activate the option" {
-    run ${p} action_options has_option -fs
+    run ${SUT} action_options has_option -fs
     [ ${#lines[@]} -eq 2 ]
     [ "${lines[0]}" = "first" ]
     [ "${lines[1]}" = "second" ]
 }
 
 @test "#has_option called with two options (short combined, reversed) will activate the option" {
-    run ${p} action_options has_option -sf
+    run ${SUT} action_options has_option -sf
     [ ${#lines[@]} -eq 2 ]
     [ "${lines[0]}" = "first" ]
     [ "${lines[1]}" = "second" ]

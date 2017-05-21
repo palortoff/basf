@@ -1,0 +1,23 @@
+#!/bin/bash
+
+do_some_action() {
+    return 0
+}
+
+describe_some_action() {
+    echo "description of some action"
+}
+
+do_some_action_with_options(){
+    return 0
+}
+
+describe_some_action_with_options(){
+    echo "some action with options"
+}
+
+describe_some_action_with_options_options(){
+    make_option --name "first" --short "f" --long "first" --desc "first"
+    make_option --name "second" --short "s" --long "second" --desc "second"
+    make_option --name "third" --short "t" --long "third" --desc "third"
+}
