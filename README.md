@@ -130,9 +130,10 @@ Options of an action are defined in the `describe_<action>_options` function
 using the `make_option` function.
 
 ```shell
-describe_list_options() {
+describe_xyz_options() {
     make_option --name "only_names" --long "only-names" --short "n" --desc "Output names of modules only"
     make_option --name "all"        --long "all"        --short "a" --desc "Do not omit hidden modules"
+    make_option --name "output"     --long "output"     --short "o" --desc "write to disk" --param filename
 }
 ```
 
@@ -140,10 +141,19 @@ Options are displayed in the help.
 
 ```
 Extra actions:
-  list                      List all available modules
+  xyz                       Description
     -n --only-names           Output names of modules only
     -a --all                  Do not omit hidden modules
+    -o --output=<filename>       write to disk
 ```
+
+`make_option` has these options:
+- `name` - the name of the option, used to access it with `has_option` and `get_option_param`
+- `long` - the long parameter name to be used `--`
+- `short` - the short parameter name to be used `-`
+- `desc` - the option description, shown in help
+- `param` - if specified the option has a parameter, the value of `param` is the parameter's name
+- `hidden` - the option is not shown in help
 
 Options are accessed within the the action with `has_option`
 
@@ -153,8 +163,13 @@ if has_option "only_names" $@; then
 fi
 ```
 
-Currently only flag options are supported. Options with parameters are covered
-in #16
+The option parameter is accessed within the action with `get_option_param`
+```shell
+local filename=$(get_option_param "output" $@)
+if [ ! -z "$filename" ]; then
+    echo $data > $filename
+fi
+```
 
 #### Hiding actions
 
