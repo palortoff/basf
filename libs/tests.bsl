@@ -23,7 +23,7 @@ has_option(){
     local longs=thisoptionwillprobablynotbeusedatall options
     make_option() {
         local name short long TEMP
-        TEMP=`getopt --longoptions short:,long:,desc:,name:,hidden -- funcname "$@"`
+        TEMP=`getopt --longoptions short:,long:,desc:,name:,hidden,param: -- funcname "$@"`
         eval set -- "$TEMP"
 
         while true; do
@@ -33,6 +33,7 @@ has_option(){
                 --long ) long=$2; longs="${longs},$2"; shift 2 ;;
                 --short ) short=$2; options="${options}$2"; shift 2 ;;
                 --hidden ) shift 1 ;;
+                --param ) shift 2 ;;
                 -- ) shift; break ;;
                 * ) break ;;
             esac
@@ -65,6 +66,59 @@ has_option(){
 
 has_no_option() {
     x=`getopt -q -- "" funcname "$@"`
+}
+
+get_option_param(){
+    # TODO: dry!
+    local wanted_option=$1 wanted_short wanted_long=thisoptionwillprobablynotbeusedatall
+    shift
+
+    local longs=thisoptionwillprobablynotbeusedatall options
+    make_option() {
+        local name short long TEMP
+        TEMP=`getopt --longoptions short:,long:,desc:,name:,hidden,param: -- funcname "$@"`
+        eval set -- "$TEMP"
+
+        while true; do
+            case "$1" in
+                --name ) name=$2; shift 2 ;;
+                --desc ) shift 2 ;;
+                --long ) long=$2; longs="${longs},$2"; shift 2 ;;
+                --short ) short=$2; options="${options}$2"; shift 2 ;;
+                --hidden ) shift 1 ;;
+                --param ) longs="${longs}:"; options="${options}:"; shift 2 ;;
+                -- ) shift; break ;;
+                * ) break ;;
+            esac
+        done
+
+        if [ "${name}" == "${wanted_option}" ] ; then
+            wanted_long=$long
+            wanted_short=$short
+        fi
+
+    }
+
+    if is_function describe_${action}_options; then
+        describe_${action}_options
+
+        local TEMP=`getopt -q --longoptions "${longs}" --options "${options}" -- $@`
+        eval set -- "$TEMP"
+
+        while true; do
+            case "$1" in
+                -${wanted_short} | --${wanted_long} )
+                    shift;
+                    echo $1
+                    return 0
+                    ;;
+                -- ) shift; break ;;
+                * ) shift ;;
+            esac
+        done
+    fi
+
+    return 1
 }
 
 ###
