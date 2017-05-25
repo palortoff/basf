@@ -4,6 +4,9 @@ DESCRIPTION="Completion for ${BASF_PROGRAM_NAME}"
 VERSION="0.1.0"
 HIDDENMODULE=0
 
+# TODO: completion for parameters (tabbing on --w_param still lists other options)
+# should offer files, enums etc.
+
 do_usage(){
     echo
     write_bold_green "${BASF_PROGRAM_NAME} completion"
@@ -103,13 +106,4 @@ EOF
 
 describe_bash(){
     echo "Bash completion"
-}
-
-do_zsh(){
-    echo "coming soon-ish..."
-    return 1
-}
-
-describe_zsh(){
-    echo "Zsh completion"
 }
