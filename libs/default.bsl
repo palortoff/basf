@@ -88,7 +88,7 @@ hide_version(){
 ###
 make_option() {
     local long short desc hidden TEMP param
-    TEMP=`getopt --longoptions short:,long:,desc:,name:,hidden,param: -- funcname "$@"`
+    TEMP=`getopt --longoptions short:,long:,desc:,name:,hidden,param:,enum: -- funcname "$@"`
     eval set -- "$TEMP"
 
     while true; do
@@ -141,7 +141,7 @@ describe_list_actions_options(){
 do_list_action_options(){
     local do_list_action_options_parameters="$@"
     make_option() {
-        TEMP=`getopt --longoptions short:,long:,desc:,name:,hidden -- funcname "$@"`
+        TEMP=`getopt --longoptions short:,long:,desc:,name:,hidden,param:,enum: -- funcname "$@"`
         eval set -- "$TEMP"
 
         local long short
@@ -183,6 +183,48 @@ describe_list_action_options(){
 
 describe_list_action_options_options(){
     make_option --name "all" --short "a" --long "all" --desc "do not omit hidden actions"
+}
+
+do_has_option_param(){
+    [[ ! $# -eq 2 ]] && die -q "illegal number of params. usage: ${BASF_BINARY_FILENAME} ${BASF_MODULE_NAME} has_option_param <action> <option>"
+
+    local action=$1
+    local option=$2
+    local result=1
+
+    do_has_action $action || die -q "unknown action $action"
+
+    make_option() {
+        TEMP=`getopt --longoptions short:,long:,desc:,name:,hidden,param:,enum: -- funcname "$@"`
+        eval set -- "$TEMP"
+
+        local is_wanted_option=1
+        local has_param=1
+        while true; do
+            case "$1" in
+                --name|--desc|--enum ) shift 2 ;;
+                --short|--long )
+                    if [ "${2}" == "${option}" ]; then
+                        is_wanted_option=0
+                    fi
+                    shift 2 ;;
+                --hidden ) shift ;;
+                --param ) has_param=0; shift 2; ;;
+                -- ) shift; break ;;
+                * ) break ;;
+            esac
+        done
+
+        [ ${is_wanted_option} -eq 0 ] && [ ${has_param} -eq 0 ] && result=0
+    }
+
+    describe_${action}_options
+
+    return $result
+}
+
+hide_has_option_param(){
+    return 0
 }
 
 do_has_action() {

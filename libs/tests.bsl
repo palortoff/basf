@@ -23,7 +23,7 @@ has_option(){
     local longs=thisoptionwillprobablynotbeusedatall options
     make_option() {
         local name short long TEMP
-        TEMP=`getopt --longoptions short:,long:,desc:,name:,hidden,param: -- funcname "$@"`
+        TEMP=`getopt --longoptions short:,long:,desc:,name:,hidden,param:,enum: -- funcname "$@"`
         eval set -- "$TEMP"
 
         while true; do
@@ -76,7 +76,7 @@ get_option_param(){
     local longs=thisoptionwillprobablynotbeusedatall options
     make_option() {
         local name short long TEMP
-        TEMP=`getopt --longoptions short:,long:,desc:,name:,hidden,param: -- funcname "$@"`
+        TEMP=`getopt --longoptions short:,long:,desc:,name:,hidden,param:,enum: -- funcname "$@"`
         eval set -- "$TEMP"
 
         while true; do
