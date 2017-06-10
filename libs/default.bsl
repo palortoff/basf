@@ -87,30 +87,10 @@ hide_version(){
 ## @example `make_option --name "attach"   --short "a" --long "attach"   --desc "start in current console"`
 ###
 make_option() {
-    local long short desc hidden TEMP
-    TEMP=`getopt --longoptions short:,long:,desc:,name:,hidden -- funcname "$@"`
-    eval set -- "$TEMP"
-
-
-    while true; do
-        case "$1" in
-            --name ) shift 2 ;;
-            --long ) long=$2; shift 2 ;;
-            --short ) short=$2; shift 2 ;;
-            --desc ) desc=$2; shift 2 ;;
-            --hidden ) return 0;;
-            -- ) shift; break ;;
-            * ) break ;;
-        esac
-    done
-    if [ ! -z ${short} ]; then
-        short="-${short}"
-    else
-        short="  "
-    fi
-    if [ ! -z ${long} ]; then long="--${long}"; fi
-    echo "${short} ${long} : ${desc}"
+    die "make_option needs to be overwritten whereever describe_<action>_options is called"
 }
+
+BASF_MAKE_OPTION_SEPARATOR="_-_-_-_"
 
 do_list_actions(){
     local list_all
@@ -261,38 +241,64 @@ print_help_module(){
         # variable contains the name of the function without the do_ prefix
         # or " ()" suffix.
         for action in "${actionList[@]}"; do
-            # call corresponding functions if available to read the descriptions
-            local desc=""
-            is_function "describe_${action}" && desc=$(describe_${action})
-
-            local name="${action}"
-            if is_function "name_${action}" ; then
-                name="$(name_${action})"
-                desc="${desc:- }"
-            fi
-
-            local text="${name}"
-            if is_function "describe_${action}_parameters"; then
-                text+=" $(describe_${action}_parameters)"
-            fi
-
-            # display entry
-            write_kv_list_entry "${text}" "${desc:-(no description)}"
-
-            # print optional options
-            if is_function "describe_${action}_options"; then
-                local line
-                local options=$(describe_${action}_options)
-                local ifs_save=${IFS} IFS=$'\n'
-                for line in ${options}; do
-                    write_kv_list_entry -p \
-                        "  ${line%%*( ):*}" \
-                        "  ${line##+([^:]):*( )}"
-                done
-                echo
-                IFS=${ifs_save}
-            fi
+            print_help_action ${action}
         done
+}
+
+print_help_action(){
+    local action=${1}
+    # call corresponding functions if available to read the descriptions
+    local desc=""
+    is_function "describe_${action}" && desc=$(describe_${action})
+
+    local name="${action}"
+    if is_function "name_${action}" ; then
+        name="$(name_${action})"
+        desc="${desc:- }"
+    fi
+
+    local text="${name}"
+    if is_function "describe_${action}_parameters"; then
+        text+=" $(describe_${action}_parameters)"
+    fi
+
+    # display entry
+    write_kv_list_entry "${text}" "${desc:-(no description)}"
+
+    print_help_action_options ${action}
+}
+
+print_help_action_options(){
+    local action=${1}
+    make_option() {
+        local long short desc hidden TEMP
+        TEMP=`getopt --longoptions short:,long:,desc:,name:,hidden -- funcname "$@"`
+        eval set -- "$TEMP"
+
+
+        while true; do
+            case "$1" in
+                --name ) shift 2 ;;
+                --long ) long=$2; shift 2 ;;
+                --short ) short=$2; shift 2 ;;
+                --desc ) desc=$2; shift 2 ;;
+                --hidden ) return 0;;
+                -- ) shift; break ;;
+                * ) break ;;
+            esac
+        done
+        if [ ! -z ${short} ]; then
+            short="-${short}"
+        else
+            short="  "
+        fi
+        if [ ! -z ${long} ]; then long="--${long}"; fi
+        write_kv_list_entry "${short} ${long}" "${desc}" --plain --left_indent "  " --right_indent "  "
+    }
+
+    if is_function "describe_${action}_options"; then
+        describe_${action}_options
+    fi
 }
 
 # vi: set shiftwidth=4 tabstop=4 expandtab:

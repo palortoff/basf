@@ -242,23 +242,38 @@ write_list_start() {
 # PUBLIC write_kv_list_entry
 #
 # Write a key/value list entry with $1 on the left and $2 on the right.
+#
+# Optional parameters (after key/value)
+# -p --plain                             -  remove the coloring of the left and right column
+# --right_indent "<add chars to indent>" -  additional right column indent
+# --left_indent "<add chars to indent>"  -  additional left column indent
 ###
 write_kv_list_entry() {
-    local n text key val lindent rindent
-    local left=${COLOR_LIST_LEFT} right=${COLOR_LIST_RIGHT}
+    local n text key val lindent rindent TEMP
+    local left=${COLOR_LIST_LEFT}
+    local right=${COLOR_LIST_RIGHT}
     local normal=${COLOR_NORMAL}
     local cols=${COLUMNS:-80}
     local IFS=$' \t\n'
 
-    if [[ $1 == "-p" ]]; then
-        left=; right=; normal=
-        shift
-    fi
+    key=${1}; shift
+    val=${1}; shift
 
-    lindent=${1%%[^[:space:]]*}
-    rindent=${2%%[^[:space:]]*}
-    key=${1##*([[:space:]])}
-    val=${2##*([[:space:]])}
+    TEMP=`getopt --options p --longoptions right_indent:,left_indent:,plain -- "$@"`
+    eval set -- "$TEMP"
+
+    while true; do
+        case "$1" in
+            -p|--plain )
+                left=; right=; normal=
+                shift
+                ;;
+            --left_indent ) lindent=$2; shift 2 ;;
+            --right_indent ) rindent=$2; shift 2 ;;
+            -- ) shift; break ;;
+            * ) break ;;
+        esac
+    done
 
     echo -n -e "  ${lindent}${left}"
     echo -n -e "$(apply_text_highlights "${left}" "${key}")"
