@@ -262,7 +262,7 @@ print_help_module(){
         # or " ()" suffix.
         for action in "${actionList[@]}"; do
             # call corresponding functions if available to read the descriptions
-            local desc=""
+            local desc=${DEFAULT_ACTION_DESCRIPTION:-""}
             is_function "describe_${action}" && desc=$(describe_${action})
 
             local name="${action}"
