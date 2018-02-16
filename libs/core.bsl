@@ -399,9 +399,10 @@ copy_function() {
 ###
 to_win_path() {
     local path=${1}
-    local result="$(readlink -e ${path} | sed -e 's/^\///' -e 's/\//\\/g' -e 's/^./\0:/' -e 's/::/:/')"
-
-    echo $result
+    if [ -e ${path} ]; then
+        readlink -e ${path} | sed -e 's/^\///' -e 's/\//\\\\/g' -e 's/^./\0:/' -e 's/::/:/'
+    fi
+    echo ${path} | sed -e 's/^\///' -e 's/\//\\\\/g' -e 's/^./\0:/' -e 's/::/:/'
 }
 
 ###
